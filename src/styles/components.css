@@ -1,0 +1,849 @@
+/* ============================================================
+   TOP SECTION  (component "Top Section", 430x122)
+   Three stacked bands: iOS status bar, address field, app topbar.
+   ============================================================ */
+.top-section {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--device-w);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: var(--chrome-bg);
+  z-index: 5;
+}
+
+/* _Status_bar — padding 14px 14px 8px 35px */
+.chrome__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 14px 8px 35px;
+}
+.chrome__time {
+  font-family: var(--font-sf);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  color: var(--white-000);
+  text-align: center;
+}
+.chrome__glyphs {
+  display: flex;
+  gap: 2px;
+  align-items: flex-start;
+  color: var(--white-000);
+}
+
+/* _Web_address_field — padding 0 10px 10px */
+.chrome__address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 10px 10px;
+}
+.chrome__address-inner {
+  display: flex;
+  flex: 1 0 0;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  min-width: 1px;
+}
+.chrome__url {
+  font-family: var(--font-sf);
+  font-size: 12px;
+  line-height: 12px;
+  color: var(--white-000);
+  font-feature-settings: "ordn" 1, "lnum" 1, "tnum" 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Topbar — white band, 24px gutter, drop shadow */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px 24px;
+  background: var(--white-000);
+  filter: drop-shadow(var(--shadow-topbar));
+}
+/* the back-arrow variant tightens the left inset to 20px */
+.topbar--back {
+  padding-left: 20px;
+}
+.topbar__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 24px;
+  min-height: 24px;
+}
+.topbar__logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 24px;
+  width: 96px;
+}
+.topbar__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.topbar__icons {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 24px;
+  line-height: 24px;
+}
+/* logo-only topbar uses navy icons; back-arrow variant uses gray-800 */
+.topbar__icons--navy {
+  color: var(--brand-navy);
+}
+.topbar__icons--gray {
+  color: var(--gray-800);
+}
+.topbar__back {
+  font-size: 24px;
+  line-height: 24px;
+  color: var(--gray-800);
+}
+
+/* ============================================================
+   BOTTOM  (component "Bottom")
+   "Powered by Perfios" + home indicator. Two heights in the file:
+   64px (both bands) and 32px (indicator only).
+   ============================================================ */
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--device-w);
+}
+.bottom--abs {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+}
+.bottom__perfios {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 8px 32px 0;
+}
+.bottom__perfios-label {
+  font-family: var(--font-roboto);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gray-600);
+  font-variation-settings: "wdth" 100;
+}
+.bottom__perfios-logo {
+  width: 58.483px;
+  height: 24px;
+}
+.bottom__perfios-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.bottom__indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 20px 24px 8px;
+}
+.bottom__indicator-bar {
+  width: 140px;
+  height: 4px;
+  border-radius: 10px;
+  background: var(--gray-900);
+}
+
+/* Home_Indicator used inside bottom sheets — 393x21, 139x5 bar */
+.home-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 393px;
+  padding: 8px 0;
+}
+.home-indicator__bar {
+  width: 139px;
+  height: 5px;
+  border-radius: 10px;
+  background: var(--gray-900);
+}
+
+/* ============================================================
+   FOOTER — the sticky white action shelf ("Frame 76078")
+   ============================================================ */
+.footer {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--device-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px 0;
+  background: var(--white-000);
+  filter: drop-shadow(var(--shadow-footer));
+  z-index: 4;
+}
+/* variant with no white shelf, used where the frame has no shadow */
+.footer--plain {
+  background: none;
+  filter: none;
+}
+.footer__action {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+.footer__actions-2 {
+  display: flex;
+  gap: 16px;
+  width: var(--content-w);
+}
+
+/* ============================================================
+   BUTTON  (component "Button_mobile" / "Button", h=56, r=8)
+   ============================================================ */
+.btn {
+  display: flex;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-field);
+  width: 100%;
+}
+.btn__label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.btn__icon {
+  font-size: 24px;
+  line-height: 24px;
+}
+
+.btn--primary {
+  background: var(--perfios-blue);
+  color: var(--white-000);
+}
+.btn--primary.is-disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* secondary: outlined, used on the confirm-video screen */
+.btn--secondary {
+  background: var(--white-000);
+  border: 1.6px solid var(--perfios-blue);
+  color: var(--perfios-blue);
+}
+/* ghost: the resend-OTP row, gray-900 text on transparent */
+.btn--ghost {
+  background: none;
+  color: var(--gray-900);
+}
+
+/* ============================================================
+   FIELD  (component "Fields" / "Field")
+   Outer 4px ring + inner 1.6px border, r=8. The ring is
+   transparent when the field is at rest.
+   ============================================================ */
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  border: 4px solid rgba(227, 242, 253, 0);
+  border-radius: var(--radius-field);
+}
+/* focused: blue-100 ring, blue-300 inner border */
+.field--focus {
+  border-color: var(--blue-100);
+}
+.field--focus .field__box {
+  border-color: var(--blue-300);
+}
+/* active/typed: blue-050 ring, blue-600 inner border */
+.field--active {
+  border-color: var(--blue-050);
+}
+.field--active .field__box {
+  border-color: var(--blue-600);
+}
+
+.field__box {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: var(--white-000);
+  border: 1.6px solid var(--gray-400);
+  border-radius: var(--radius-field);
+  padding: 16px 0;
+}
+/* filled fields carry a label above the value, so the box is shorter */
+.field__box--stacked {
+  padding: 8px 0 6px;
+}
+.field__leading {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 16px;
+  font-size: 24px;
+  line-height: 24px;
+  color: var(--primary);
+}
+.field__trailing {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  padding: 0 16px;
+  font-size: 24px;
+  line-height: 24px;
+}
+.field__trailing--ok {
+  color: var(--green-800);
+}
+.field__container {
+  display: flex;
+  flex: 1 0 0;
+  align-items: center;
+  align-self: stretch;
+  min-width: 1px;
+  padding: 0 16px;
+}
+.field__container--stacked {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 1px;
+  padding: 0 16px;
+}
+/* placeholder-only fields on the landing screen use Test Calibre 20px */
+.field__placeholder-brand {
+  font-family: var(--font-brand);
+  font-size: 20px;
+  line-height: 24px;
+  color: #6a6a6a;
+  white-space: nowrap;
+}
+.field__placeholder {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-600);
+  white-space: nowrap;
+}
+.field__label {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.5px;
+  color: var(--gray-600);
+  width: 100%;
+}
+.field__value {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-900);
+  width: 100%;
+  font-feature-settings: "ss02" 1, "lnum" 1, "tnum" 1;
+}
+
+/* Demo view: the real <input> a `editable` Field renders. It carries the
+   same .field__value / .field__placeholder-brand type styles as the static
+   text it replaces, so the box measures identically. */
+.field__input {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  outline: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  min-width: 1px;
+}
+.field__value.field__input {
+  font-family: inherit;
+}
+.field__input::placeholder {
+  color: var(--gray-600);
+  opacity: 1;
+}
+.field__placeholder-brand.field__input::placeholder {
+  color: #6a6a6a;
+}
+
+/* masked value — rows of 6px dots, as built in the file */
+.field__mask {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  gap: 6px;
+}
+.field__mask-group {
+  display: flex;
+  gap: 8px;
+}
+.field__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gray-900);
+}
+.field__mask-tail {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-900);
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+/* ============================================================
+   INFO CARD — "Fetched from PAN / Vikas Kumar" (6031:16505)
+   ============================================================ */
+.info-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1.6px solid var(--card-stroke);
+  border-radius: var(--radius-field);
+  font-size: 16px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+.info-card__label {
+  color: var(--gray-600);
+}
+.info-card__value {
+  color: var(--gray-900);
+}
+
+/* plain bordered note block — address / charges footnotes */
+.note-card {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--white-000);
+  border: 1.6px solid var(--gray-400);
+  border-radius: var(--radius-field);
+}
+.note-card__text {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-700);
+  width: 350px;
+}
+
+/* footnote under a table — 12px/16px gray-600, 8px inset */
+.footnote {
+  display: flex;
+  align-items: flex-start;
+  padding: 0 8px;
+}
+.footnote__text {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--gray-600);
+  width: 366px;
+}
+
+/* ============================================================
+   CONSENT  (component "Consent", 6022:3372)
+   ============================================================ */
+.consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  width: var(--content-w);
+}
+.consent__box {
+  font-size: 24px;
+  line-height: 24px;
+  color: var(--gray-600);
+  flex: none;
+}
+.consent__text {
+  flex: 1 0 0;
+  min-width: 1px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--gray-900);
+}
+.consent__link {
+  color: var(--blue-700);
+  text-decoration: underline;
+  text-decoration-skip-ink: none;
+  text-underline-position: from-font;
+}
+
+/* ============================================================
+   TABLE  (the "_base / cell" + "Row" pattern)
+   Two 191px columns inside a 382px bordered card.
+   ============================================================ */
+.table-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: var(--content-w);
+  background: var(--white-000);
+  border: 1.6px solid var(--gray-400);
+  border-radius: var(--radius-field);
+}
+.table-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 8px 0;
+}
+.table-group--pad12 {
+  padding: 12px 0;
+}
+/* dashed rule between groups, as in the Key Fact Statement */
+.table-group--divided {
+  border-bottom: 1px dashed var(--gray-400);
+}
+.table-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+.cell {
+  display: flex;
+  flex: 1 0 0;
+  align-items: center;
+  align-self: stretch;
+  min-width: 1px;
+  padding: 8px 0 8px 16px;
+}
+.cell--indent {
+  padding-left: 32px;
+}
+.cell--value {
+  justify-content: flex-end;
+  padding: 8px 16px 8px 0;
+  gap: 8px;
+}
+.cell__label {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-700);
+  white-space: nowrap;
+}
+.cell__value {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-900);
+  text-align: right;
+  white-space: nowrap;
+}
+.cell__value--muted {
+  color: var(--gray-700);
+}
+.cell__value--strong {
+  font-weight: 600;
+}
+.cell__value--bold {
+  font-weight: 700;
+}
+.cell__value--primary {
+  color: var(--blue-800);
+}
+.cell__value--green {
+  color: var(--green-600);
+}
+.cell__value--gray800 {
+  color: var(--gray-800);
+}
+/* stacked row: full-width label then right-aligned value beneath */
+.table-row--stacked {
+  flex-direction: column;
+  align-items: flex-start;
+}
+.cell--full {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0 0 0 16px;
+}
+.cell--full-value {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 4px 16px;
+}
+.cell__label--strong {
+  flex: 1 0 0;
+  min-width: 1px;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-900);
+  white-space: normal;
+}
+
+/* ============================================================
+   SHEET  (bottom sheets: OTP, Charges)
+   ============================================================ */
+.sheet {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: var(--device-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px 0;
+  background: var(--white-000);
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  filter: drop-shadow(var(--shadow-sheet));
+  z-index: 20;
+}
+/* the charges sheet has no side padding on its body */
+.sheet--flush {
+  padding: 12px 0 0;
+}
+.sheet__grabber {
+  width: 40px;
+  height: 5px;
+  border-radius: 100px;
+  background: var(--gray-300);
+  flex: none;
+}
+.sheet__body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  width: 100%;
+}
+.sheet__title {
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  color: var(--asphalt-900);
+  width: 100%;
+}
+.sheet__sub {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-600);
+  width: 100%;
+}
+.sheet__close-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  width: 100%;
+}
+.sheet__close {
+  font-size: 24px;
+  line-height: 24px;
+  color: var(--gray-500);
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10;
+}
+
+/* ============================================================
+   RADIO / CHECK LIST  ("item" rows, 56px tall)
+   ============================================================ */
+.choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  border: 1.6px solid var(--gray-400);
+  border-radius: var(--radius-field);
+  background: var(--white-000);
+}
+.choice--selected {
+  border-color: var(--primary);
+  background: var(--card-bg);
+}
+.choice__inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+}
+.choice__icon {
+  font-size: 32px;
+  line-height: 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--gray-600);
+}
+.choice__icon--on {
+  color: var(--primary);
+}
+.choice__label {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-900);
+  white-space: nowrap;
+}
+.choice__info {
+  font-size: 20px;
+  line-height: 20px;
+  color: var(--gray-600);
+  padding-right: 16px;
+}
+
+/* ============================================================
+   LOADER screens — 390x390 animation slot + caption
+   ============================================================ */
+.loader {
+  position: absolute;
+  left: 20px;
+  top: 271px;
+  width: 390px;
+  height: 390px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-field);
+}
+.loader__slot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.loader__caption {
+  position: absolute;
+  left: 0;
+  width: var(--device-w);
+  text-align: center;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-900);
+}
+
+
+/* The VID/Aadhaar and OTP box on the NSDL raster. Type styling is
+   matched to the value baked into the "filled" export so the live box
+   and the static frame read the same. */
+.nsdl__input {
+  appearance: none;
+  -webkit-appearance: none;
+  box-sizing: border-box;
+  background: transparent;
+  border: 0;
+  outline: none;
+  padding: 0 11px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16px;
+  line-height: 30px;
+  color: #212121;
+  cursor: pointer;
+}
+.nsdl__input:focus {
+  cursor: text;
+}
+.nsdl__input.hint::after {
+  content: none;
+}
+/* an input cannot carry ::after, so the ring is drawn as a shadow */
+.nsdl__input.hint {
+  border-radius: 6px;
+  animation: nsdl-hint-pulse 1.5s ease-in-out infinite;
+}
+@keyframes nsdl-hint-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(0, 80, 170, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(0, 80, 170, 0.9);
+  }
+}
+
+/* ============================================================
+   DEMO AFFORDANCES
+   ------------------------------------------------------------
+   Only active in the interactive Demo view. `.hint` pulses a ring
+   around whatever the next tap should be; `.is-tappable` just
+   sets the cursor. Neither changes layout, so a hinted screen
+   still measures identically to its Figma frame.
+   ============================================================ */
+.is-tappable {
+  cursor: pointer;
+}
+
+.hint {
+  position: relative;
+}
+.hint::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  pointer-events: none;
+  animation: hint-pulse 1.5s ease-in-out infinite;
+}
+@keyframes hint-pulse {
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* the consent row is a text block, so its ring hugs the content */
+.consent.hint::after {
+  inset: -6px -4px;
+  border-radius: 8px;
+}

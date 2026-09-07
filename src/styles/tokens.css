@@ -1,0 +1,62 @@
+/* ============================================================
+   Design tokens — extracted from
+   "Internal - Universal PCG Journeys" / PA-PQ <> Personal Loan Top Up
+   Every value here came out of the Figma file, not invented.
+   ============================================================ */
+
+:root {
+  /* --- Brand / semantic ------------------------------------ */
+  --primary: #0050aa;          /* primary                     */
+  --perfios-blue: #0050aa;     /* perfios-blue                */
+  --brand-navy: #10284a;       /* Acme headline + topbar icons*/
+  --chrome-bg: #272b3f;        /* browser chrome (Top Section)*/
+  --card-bg: #e9f1fd;          /* card-bg                     */
+  --card-stroke: #84b9f9;      /* card-storke [sic, as named] */
+
+  /* --- Gray ramp ------------------------------------------- */
+  --white-000: #ffffff;
+  --gray-050: #fafafa;
+  --gray-300: #e0e0e0;
+  --gray-400: #bdbdbd;
+  --gray-500: #9e9e9e;
+  --gray-600: #757575;
+  --gray-700: #616161;
+  --gray-800: #424242;
+  --gray-900: #212121;
+
+  /* --- Blue ramp ------------------------------------------- */
+  --blue-050: #e3f2fd;
+  --blue-100: #d7e7fc;         /* focus ring on Field-focus   */
+  --blue-300: #60a6f7;         /* focused field border        */
+  --blue-600: #1e88e5;
+  --blue-700: #1976d2;         /* MITC link                   */
+  --blue-800: #1565c0;         /* in-principle amount         */
+
+  /* --- Green ----------------------------------------------- */
+  --green-600: #43a047;
+  --green-800: #2e7d32;        /* field success check_circle  */
+
+  /* --- Asphalt --------------------------------------------- */
+  --asphalt-900: #263238;      /* sheet titles                */
+
+  /* --- Type ------------------------------------------------ */
+  --font-ui: "Inter", "Inter Fallback", system-ui, sans-serif;
+  --font-brand: "Test Calibre", "Inter", system-ui, sans-serif;
+  --font-roboto: "Roboto", system-ui, sans-serif;
+  --font-sf: "SF Compact Text", "SF Compact Display", -apple-system,
+             "Helvetica Neue", system-ui, sans-serif;
+  --font-icon: "Material Symbols Rounded";
+
+  /* --- Geometry -------------------------------------------- */
+  --device-w: 430px;           /* every frame is 430 wide     */
+  --device-h: 932px;           /* standard frame height       */
+  --gutter: 24px;              /* content inset               */
+  --content-w: 382px;          /* 430 - 24*2                  */
+  --radius-field: 8px;
+  --radius-sheet: 32px;
+
+  /* --- Elevation ------------------------------------------- */
+  --shadow-topbar: 0px 4px 4px rgba(0, 0, 0, 0.08);
+  --shadow-footer: 0px -4px 8px rgba(0, 0, 0, 0.12);
+  --shadow-sheet: 0px -4px 8px rgba(0, 0, 0, 0.16);
+}

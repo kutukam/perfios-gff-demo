@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.vite/
+
+# local co-browse authoring env
+.env.development.local
+.env.production
