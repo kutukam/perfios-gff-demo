@@ -6,4 +6,3 @@ dist/
 
 # local co-browse authoring env
 .env.development.local
-.env.production
