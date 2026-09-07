@@ -280,7 +280,12 @@ function EnachHeader({ children }) {
 
 export function ENach({ onSubmit, hint }) {
   return (
-    <div className="screen screen--white" style={{ height: 932 }}>
+    /* Taller than the 932 the other frames use, because this one's content really is:
+       the mandate and customer tables plus the declaration run to 947, so at 932 the
+       Cancel/Submit row was clipped by `overflow: hidden` — half the button visible,
+       and the live half sitting under the home indicator. The Details screen grows
+       for the same reason when its address block opens. */
+    <div className="screen screen--white" style={{ height: 1000 }}>
       <TopSection variant="bare" url={E.url} />
 
       <div style={{ position: "absolute", left: 0, top: 66, width: 430 }}>
