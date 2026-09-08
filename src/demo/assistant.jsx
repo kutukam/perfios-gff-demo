@@ -1,5 +1,9 @@
 import { useCallback, useRef, useState } from "react";
-import { ConversationAgent, InteractionType } from "sarvam-conv-ai-sdk/browser";
+import {
+  BrowserAudioInterface,
+  ConversationAgent,
+  InteractionType,
+} from "sarvam-conv-ai-sdk/browser";
 
 /* ============================================================
    The help button
@@ -30,8 +34,10 @@ const AGENT = {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/* The page's own guidance ring is the assistant's, so it appears when the
-   assistant does and goes when it goes — see .hint in components.css. */
+/* Marks the page as being guided. It does NOT draw anything: the ring is
+   co-browse's, so that there is exactly one highlight and the agent narrates
+   the control it is actually on. This is here for styling that depends on a
+   live session — and so the state is inspectable. */
 function setGuided(on) {
   try {
     document.documentElement.classList.toggle("is-guided", on);
@@ -80,6 +86,10 @@ export function AssistantButton() {
 
       const agent = new ConversationAgent({
         apiKey: "",
+        /* Required for a CALL interaction — without it the SDK refuses to
+           start with "audioInterface is required for CALL interactions". It
+           owns the microphone and the playback path. */
+        audioInterface: new BrowserAudioInterface(),
         baseUrl: `${WORKER}/api/sarvam/`,
         platform: "browser",
         customHeaders: {

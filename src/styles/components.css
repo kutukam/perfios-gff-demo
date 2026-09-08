@@ -795,7 +795,7 @@
 }
 /* an input cannot carry ::after, so the ring is drawn as a shadow — gated on
    the assistant being live for the same reason as .hint::after above */
-html.is-guided .nsdl__input.hint {
+html.is-authoring .nsdl__input.hint {
   border-radius: 6px;
   animation: nsdl-hint-pulse 1.5s ease-in-out infinite;
 }
@@ -824,14 +824,18 @@ html.is-guided .nsdl__input.hint {
 .hint {
   position: relative;
 }
-/* The ring only exists while the assistant is guiding. On a page nobody has
-   asked for help on it was pulsing at the first field on its own, which reads
-   as the page highlighting itself — and is the assistant's job, not the
-   page's. `is-guided` goes on <html> when the assistant connects. */
+/* The page NEVER draws its own ring.
+ *
+ * Highlighting belongs to co-browse: the flow engine picks the target, the SDK
+ * paints the ring, and the agent narrates that exact control. This ring was a
+ * second, independent one — so the moment the assistant connected there were
+ * two things highlighting, and before it connected the page appeared to guide
+ * itself. `?chrome=1` brings it back for authoring, where there is no session
+ * and it is the only way to see which control a step means. */
 .hint::after {
   content: none;
 }
-html.is-guided .hint::after {
+html.is-authoring .hint::after {
   content: "";
   position: absolute;
   inset: -5px;

@@ -368,6 +368,11 @@ function chromeForced() {
 
 export default function App() {
   const [view, setView] = useState(initialView);
+  /* ?chrome=1 is authoring mode: it restores the step nav AND the page's own
+     hint ring, which are both off in a demo because co-browse owns guidance. */
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle("is-authoring", chromeForced());
+  }, []);
   const [index, setIndex] = useState(0);
   const current = SCREENS[index];
 
