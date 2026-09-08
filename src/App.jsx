@@ -60,13 +60,19 @@ const FRAME_W = 430;
    66px of every frame, so on a real phone the frame is cropped by exactly that
    much and every coordinate inside it stays where the design put it. */
 const CHROME_H = 66;
+/* On anything that is not itself a phone, the frame is shown INSIDE a phone —
+   a bezel, so the drawn status bar and address bar read as that phone's own
+   rather than as a second set of browser chrome floating on a desktop. The
+   reservation is generous on purpose: the bezel scales with the frame, and
+   under-reserving here clips it. */
+const BEZEL = 40;
 
 /* `fitRef` is the WRAPPER, not the scaled frame. Measuring the frame's own
    parent would measure the box this hook sizes — available width would shrink
    with the scale that shrank it, and the whole thing collapsed to the 0.4
    floor on every screen. Measure the container the wrapper sits in. */
 function useFit(fitRef) {
-  const [box, setBox] = useState({ fit: 1, h: 932, crop: 0 });
+  const [box, setBox] = useState({ fit: 1, h: 932, crop: 0, bezel: false });
 
   const measure = useCallback(() => {
     const wrap = fitRef.current;
@@ -74,7 +80,12 @@ function useFit(fitRef) {
     if (!wrap || !frame) return;
     // offsetHeight is the UNTRANSFORMED box, which is what we scale from.
     const frameH = frame.offsetHeight || 932;
-    const availW = (wrap.parentElement?.clientWidth ?? window.innerWidth) - 16;
+    /* Measure the OUTER container, never the wrapper's immediate parent: with
+       the bezel that parent is itself sized from this scale, so available width
+       shrank with the scale that shrank it and everything collapsed to the 0.4
+       floor. `.flow` is the one box in this chain that no scale feeds. */
+    const host = wrap.closest(".flow") ?? wrap.parentElement;
+    const availW = (host?.clientWidth ?? window.innerWidth) - 16;
     /* Measure the harness rather than reserving a guess for it: the title bar
        and the step nav both shrink on small screens, and a fixed allowance
        left the frame needlessly small in landscape. */
@@ -91,16 +102,23 @@ function useFit(fitRef) {
        on the Submit button at scrollY 0 and stayed put while the button moved
        85px away. A demo whose highlight is wrong the moment someone scrolls is
        worse than a slightly smaller phone, so the page never scrolls. */
+    /* A real phone supplies its own status and address bars, so the drawn ones
+       come off. Anywhere else they stay and get a bezel around them. */
     const phone = window.innerWidth < 640;
-    // A real phone supplies its own status and address bars; drop the drawn ones.
     const crop = phone ? CHROME_H : 0;
+    const bezel = phone ? 0 : BEZEL;
     const shown = frameH - crop;
-    const wanted = Math.min(availW / FRAME_W, availH / shown);
+    const wanted = Math.min(
+      (availW - bezel) / FRAME_W,
+      (availH - bezel) / shown
+    );
 
     // Never below a legible floor, and never so large it stops reading as a phone.
     const fit = Math.max(0.4, Math.min(wanted, 1.6));
     setBox((b) =>
-      b.fit === fit && b.h === shown && b.crop === crop ? b : { fit, h: shown, crop }
+      b.fit === fit && b.h === shown && b.crop === crop && b.bezel === (bezel > 0)
+        ? b
+        : { fit, h: shown, crop, bezel: bezel > 0 }
     );
   }, [fitRef]);
 
@@ -119,8 +137,12 @@ function useFit(fitRef) {
 
 function Stage({ children }) {
   const ref = useRef(null);
-  const { fit, h, crop } = useFit(ref);
-  return (
+  const { fit, h, crop, bezel } = useFit(ref);
+  /* The bezel scales with the frame so a small phone on a laptop still looks
+     like a phone rather than a screen in a thick black picture frame. */
+  const pad = Math.round(13 * fit);
+  const body = (
+
     /* The wrapper reserves what the scaled frame actually occupies; the frame
        itself is scaled from its top-left so the two stay in register. `crop`
        lifts the frame so its own phone chrome sits above the visible area. */
@@ -139,6 +161,30 @@ function Stage({ children }) {
         style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
       >
         <div style={{ marginTop: -crop }}>{children}</div>
+      </div>
+    </div>
+  );
+
+  if (!bezel) return body;
+  return (
+    <div
+      className="device"
+      style={{ padding: pad, borderRadius: Math.round(58 * fit) }}
+    >
+      <div
+        className="device__screen"
+        style={{ borderRadius: Math.round(46 * fit) }}
+      >
+        {body}
+        <span
+          className="device__island"
+          style={{
+            top: Math.round(11 * fit),
+            width: Math.round(104 * fit),
+            height: Math.round(28 * fit),
+            borderRadius: Math.round(16 * fit),
+          }}
+        />
       </div>
     </div>
   );

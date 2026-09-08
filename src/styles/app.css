@@ -129,3 +129,35 @@
    page, which is what a real application on a phone looks like. */
 .app--bare .flow { padding-top: 16px; }
 @media (max-width: 900px) { .app--bare .flow { padding-top: 8px; } }
+
+
+/* ============================================================
+   DEVICE — the phone the journey is shown inside.
+   ------------------------------------------------------------
+   On a real phone there is no bezel: the device IS the device,
+   and the frame's own drawn status bar and address bar are
+   cropped so they do not duplicate the ones the handset already
+   has. Anywhere else — iPad, laptop — the drawn chrome stays and
+   this wraps it, so what reads as a stray browser bar floating on
+   a desktop instead reads as a phone being held up.
+   ============================================================ */
+.device {
+  position: relative;
+  background: #0a0a0c;
+  box-shadow:
+    0 0 0 1px #3a3a40,
+    inset 0 0 0 1px rgba(255, 255, 255, .10),
+    0 24px 60px rgba(16, 40, 74, .30),
+    0 4px 12px rgba(16, 40, 74, .16);
+}
+.device__screen { position: relative; overflow: hidden; line-height: 0; }
+/* The dynamic island sits over the frame's own status bar, between its clock
+   and its signal icons — which is exactly where a phone puts it. */
+.device__island {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a0a0c;
+  pointer-events: none;
+  z-index: 6;
+}
