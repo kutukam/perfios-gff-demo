@@ -20,13 +20,18 @@
       (async function () {
         var WORKER = 'https://cobrowse-do.harshkhandelwal8553.workers.dev';
         var SITE = 'perfios-gff-demo';
+        /* Name the owner. Without it the session is unowned, and the assistant — which
+           authenticates as its own tenant rather than with a superuser key — is refused
+           on the very session this page just opened, and reports that it cannot see the
+           screen. */
+        var TENANT = 'perfios';
         var params = new URLSearchParams(location.search);
         if (!params.get('cb')) {
           try {
             var res = await fetch(WORKER + '/api/session', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ site: SITE })
+              body: JSON.stringify({ site: SITE, tenant: TENANT })
             });
             if (res.ok) {
               var session = await res.json();
