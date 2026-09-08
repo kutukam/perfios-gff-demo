@@ -54,16 +54,20 @@ import { useDemo } from "./demo/flow.jsx";
    ============================================================ */
 const FRAME_W = 430;
 
-function useFit(stageRef) {
+/* `fitRef` is the WRAPPER, not the scaled frame. Measuring the frame's own
+   parent would measure the box this hook sizes — available width would shrink
+   with the scale that shrank it, and the whole thing collapsed to the 0.4
+   floor on every screen. Measure the container the wrapper sits in. */
+function useFit(fitRef) {
   const [box, setBox] = useState({ fit: 1, h: 932 });
 
   const measure = useCallback(() => {
-    const stage = stageRef.current;
-    const frame = stage?.querySelector(".screen");
-    if (!stage || !frame) return;
+    const wrap = fitRef.current;
+    const frame = wrap?.querySelector(".screen");
+    if (!wrap || !frame) return;
     // offsetHeight is the UNTRANSFORMED box, which is what we scale from.
     const frameH = frame.offsetHeight || 932;
-    const availW = (stage.parentElement?.clientWidth ?? window.innerWidth) - 16;
+    const availW = (wrap.parentElement?.clientWidth ?? window.innerWidth) - 16;
     /* Measure the harness rather than reserving a guess for it: the title bar
        and the step nav both shrink on small screens, and a fixed allowance
        left the frame needlessly small in landscape. */
@@ -84,7 +88,7 @@ function useFit(stageRef) {
     // Never below a legible floor, and never so large it stops reading as a phone.
     const fit = Math.max(0.4, Math.min(wanted, 1.6));
     setBox((b) => (b.fit === fit && b.h === frameH ? b : { fit, h: frameH }));
-  }, [stageRef]);
+  }, [fitRef]);
 
   useLayoutEffect(measure);
   useEffect(() => {
@@ -105,10 +109,13 @@ function Stage({ children }) {
   return (
     /* The wrapper reserves what the scaled frame actually occupies; the frame
        itself is scaled from its top-left so the two stay in register. */
-    <div className="flow__fit" style={{ width: FRAME_W * fit, height: h * fit }}>
+    <div
+      className="flow__fit"
+      ref={ref}
+      style={{ width: FRAME_W * fit, height: h * fit }}
+    >
       <div
         className="flow__stage"
-        ref={ref}
         style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
       >
         {children}

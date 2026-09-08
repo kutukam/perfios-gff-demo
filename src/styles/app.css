@@ -33,6 +33,12 @@
    gap below the phone. */
 .flow__fit { position: relative; flex: none; }
 .flow__stage {
+  /* Absolute and explicitly 430 wide — the authored frame width, NOT the
+     wrapper's. As an ordinary block the stage took the wrapper's width (430 x
+     fit) and `overflow: hidden` then sliced that fraction off the frame inside
+     it: the logo, the headline and the consent line all lost their left edge. */
+  position: absolute; top: 0; left: 0;
+  width: var(--device-w);
   border-radius: 4px; overflow: hidden;
   box-shadow: 0 1px 2px rgba(16,40,74,.10), 0 16px 40px rgba(16,40,74,.14);
 }
