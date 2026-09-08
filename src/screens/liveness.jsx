@@ -97,7 +97,13 @@ function StopButton({ progress, onClick, hint }) {
   return (
     <div
       className={`stop-btn${hint ? " hint" : ""}${onClick ? " is-tappable" : ""}`}
+      role="button"
+      tabIndex={0}
+      aria-label="Stop"
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); }
+      }}
       style={{ background: progress ? "rgba(0,80,170,0.45)" : undefined }}
     >
       {progress > 0 && (
