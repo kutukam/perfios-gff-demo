@@ -19,7 +19,7 @@ import {
    page's JavaScript is a key anyone can spend.
    ============================================================ */
 
-const WORKER = "https://cobrowse.unikernel.ai";
+const WORKER = "https://cobrowse-do.harshkhandelwal8553.workers.dev";
 
 /* Values from the agent's Deploy-with-code panel. `version` is pinned on
    purpose: Samvaad serves the older committed default when it is unset, which
@@ -29,7 +29,7 @@ const AGENT = {
   orgId: "019ec301-92a0-7a28-846c-b1afafcdf30d",
   workspaceId: "019ec301-92a7-7f33-81f2-14326ae2265e",
   appId: "Personal-Lo-f35cc29d-0234",
-  version: 3,
+  version: 5,
 };
 
 /* Committing on the dashboard mints a NEW version, and a pin left behind keeps
