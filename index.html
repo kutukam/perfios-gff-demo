@@ -4,52 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PA/PQ · Personal Loan Top Up</title>
-        <link rel="stylesheet" crossorigin href="/perfios-gff-demo/assets/index-Dm_nmPAN.css">
-    <script>
-      /* Open a co-browse session for a visitor who arrived WITHOUT an assistant's link.
-         This app only ever bound to `?cb=` in the URL, so pressing the help button on a
-         plain link started the voice agent with no session behind it: nothing to
-         highlight, and every screen tool answering that it cannot see the page.
-
-         The session reference is put into the URL BEFORE the app module is injected, so
-         the existing link-binding path picks it up unchanged — no bundle surgery. The
-         module is appended here rather than left in <head> purely to guarantee that
-         ordering. POST /api/session needs no API key: it creates an empty session bound
-         to a published site, and the visitor still has to consent before one byte of page
-         structure leaves the browser. */
-      (async function () {
-        var WORKER = 'https://cobrowse-do.harshkhandelwal8553.workers.dev';
-        var SITE = 'perfios-gff-demo';
-        /* Name the owner. Without it the session is unowned, and the assistant — which
-           authenticates as its own tenant rather than with a superuser key — is refused
-           on the very session this page just opened, and reports that it cannot see the
-           screen. */
-        var TENANT = 'perfios';
-        var params = new URLSearchParams(location.search);
-        if (!params.get('cb')) {
-          try {
-            var res = await fetch(WORKER + '/api/session', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ site: SITE, tenant: TENANT })
-            });
-            if (res.ok) {
-              var session = await res.json();
-              var code = String(session.key || session.sessionId || '');
-              if (code) {
-                params.set('cb', code);
-                history.replaceState(null, '', location.pathname + '?' + params + location.hash);
-              }
-            }
-          } catch (e) { /* the journey runs perfectly well without assistance */ }
-        }
-        var tag = document.createElement('script');
-        tag.type = 'module';
-        tag.crossOrigin = '';
-        tag.src = '/perfios-gff-demo/assets/index-BOOXVhGj.js';
-        document.head.appendChild(tag);
-      })();
-    </script>
+    <script type="module" crossorigin src="/perfios-gff-demo/assets/index-CkyQqnbD.js"></script>
+    <link rel="stylesheet" crossorigin href="/perfios-gff-demo/assets/index-Dm_nmPAN.css">
   </head>
   <body>
     <div id="root"></div>
