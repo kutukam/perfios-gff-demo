@@ -84,16 +84,18 @@ function useFit(fitRef) {
        Without it the frame ended 19px under the nav bar. */
     const availH = window.innerHeight - bar - nav - 76;
 
-    /* On a phone, fill the width and let the page scroll — that is what the
-       real journey does, and a frame shrunk to fit the height would be a
-       postage stamp inside its own device. On a tablet or a laptop, where the
-       demo is being shown TO someone, fit the whole phone on screen instead. */
+    /* ALWAYS fit the whole frame, on a phone too.
+       Filling the width and letting the page scroll read better, but the
+       co-browse ring is drawn from the target's viewport rect and does not
+       follow page scroll: measured on the e-Nach screen, the ring sat exactly
+       on the Submit button at scrollY 0 and stayed put while the button moved
+       85px away. A demo whose highlight is wrong the moment someone scrolls is
+       worse than a slightly smaller phone, so the page never scrolls. */
     const phone = window.innerWidth < 640;
     // A real phone supplies its own status and address bars; drop the drawn ones.
     const crop = phone ? CHROME_H : 0;
     const shown = frameH - crop;
-    const fitW = availW / FRAME_W;
-    const wanted = phone ? fitW : Math.min(fitW, availH / shown);
+    const wanted = Math.min(availW / FRAME_W, availH / shown);
 
     // Never below a legible floor, and never so large it stops reading as a phone.
     const fit = Math.max(0.4, Math.min(wanted, 1.6));
@@ -129,11 +131,12 @@ function Stage({ children }) {
     >
       <div
         className="flow__stage"
-        style={{
-          transform: `scale(${fit})`,
-          transformOrigin: "top left",
-          height: h,
-        }}
+        /* No height here: the frame is taller than the visible box by `crop`,
+           and a fixed height plus overflow:hidden clipped the BOTTOM of any
+           frame taller than the last measurement — which cut the e-Nach
+           Cancel/Submit row clean off. The wrapper does the clipping; it is
+           already exactly the visible size. */
+        style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
       >
         <div style={{ marginTop: -crop }}>{children}</div>
       </div>

@@ -419,9 +419,13 @@ export function ENach({ onSubmit, hint }) {
                SELECTOR — without one the model reported the control with no `sel`
                and the highlight ring had nothing to attach to. */
             id="enach-submit"
-            role="button"
-            tabIndex={0}
-            aria-label={E.submit}
+            /* The deposit screen's CTA is also "Submit". Two consecutive steps
+               whose target carries the SAME label let the highlight skip
+               re-resolving when the screen changed, and the ring stayed frozen
+               on the previous screen's node — measured: the ring did not move
+               at any scroll position while the button did. The customer still
+               reads "Submit"; only the accessible name is made unique. */
+            aria-label="Submit mandate"
             style={{
               background: "var(--primary)",
               color: "#fff",

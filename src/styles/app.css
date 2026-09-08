@@ -31,7 +31,13 @@
 /* Reserves the space the SCALED frame occupies — a transform paints smaller
    but still reserves its unscaled box, which otherwise leaves a page-length
    gap below the phone. */
-.flow__fit { position: relative; flex: none; }
+/* The wrapper owns the visible window: it is sized to the scaled frame minus
+   whatever chrome was cropped, and it is what clips. */
+.flow__fit {
+  position: relative; flex: none; overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(16,40,74,.10), 0 16px 40px rgba(16,40,74,.14);
+}
 .flow__stage {
   /* Absolute and explicitly 430 wide — the authored frame width, NOT the
      wrapper's. As an ordinary block the stage took the wrapper's width (430 x
@@ -39,8 +45,6 @@
      it: the logo, the headline and the consent line all lost their left edge. */
   position: absolute; top: 0; left: 0;
   width: var(--device-w);
-  border-radius: 4px; overflow: hidden;
-  box-shadow: 0 1px 2px rgba(16,40,74,.10), 0 16px 40px rgba(16,40,74,.14);
 }
 .flow__nav {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
