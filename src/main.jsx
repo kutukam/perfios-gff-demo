@@ -21,38 +21,63 @@ import App from "./App.jsx";
 const TENANT = import.meta.env.VITE_COBROWSE_TENANT ?? "perfios";
 const ENDPOINT = import.meta.env.VITE_COBROWSE_ENDPOINT || "https://cobrowse-do.harshkhandelwal8553.workers.dev";
 
-/* A visitor who arrived WITHOUT an assistant's link still gets assistance from the help
-   button, so the page opens its own session and puts the reference in the URL before
-   init() reads it. `tenant` is not decoration: an unowned session refuses the tenant key
-   this journey's assistant authenticates with, so it would be forbidden from reading the
-   very session this page just created. Failure is silent — the journey runs fine without
-   assistance. */
-async function ensureReference() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("cb")) return;
-  try {
-    const res = await fetch(`${ENDPOINT}/api/session`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ site: "perfios-gff-demo", tenant: TENANT }),
+/* Start assistance, and not one moment sooner.
+   ------------------------------------------------------------
+   On a link from the assistant (?cb=<code>) this runs at load: the customer was
+   sent here to be guided and expects it. Otherwise NOTHING happens until they
+   press the help button — a visitor who never asks for help is never asked for
+   consent, never publishes a page model, and never sees a control ring itself
+   unprompted.
+
+   `tenant` is not decoration. An unowned session refuses the tenant key this
+   journey's assistant authenticates with, so it would be forbidden from reading
+   the very session this page just opened. */
+let started = null;
+
+export function startAssistance() {
+  if (started) return started;
+  started = (async () => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.get("cb")) {
+      try {
+        const res = await fetch(`${ENDPOINT}/api/session`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ site: "perfios-gff-demo", tenant: TENANT }),
+        });
+        if (res.ok) {
+          const session = await res.json();
+          const code = String(session.key ?? session.sessionId ?? "");
+          if (code) {
+            params.set("cb", code);
+            window.history.replaceState(
+              null, "", `${window.location.pathname}?${params}${window.location.hash}`,
+            );
+          }
+        }
+      } catch { /* assistance is optional; the journey is not */ }
+    }
+    // init() never throws, so a co-browse failure cannot take the journey down.
+    return CoBrowse.init({
+      tenant: TENANT,
+      // Passed explicitly: the SDK's own default still names the previous service.
+      endpoint: ENDPOINT,
+      linkParam: "cb",
     });
-    if (!res.ok) return;
-    const session = await res.json();
-    const code = String(session.key ?? session.sessionId ?? "");
-    if (!code) return;
-    params.set("cb", code);
-    window.history.replaceState(null, "", `${window.location.pathname}?${params}${window.location.hash}`);
-  } catch { /* assistance is optional; the journey is not */ }
+  })();
+  return started;
 }
 
-await ensureReference();
+/** The code the assistant needs in order to see this screen. */
+export function cobrowseCode() {
+  try {
+    return (new URLSearchParams(window.location.search).get("cb") ?? "").split("_")[0] || "";
+  } catch {
+    return "";
+  }
+}
 
-CoBrowse.init({
-  tenant: TENANT,
-  // Passed explicitly: the SDK's own default still names the previous service.
-  endpoint: ENDPOINT,
-  linkParam: "cb",
-});
+if (cobrowseCode()) void startAssistance();
 
 /* Authoring aid, dev only: CoBrowse.__scanForTest() prints the labels the
    assistant would see for the screen currently rendered, which is what a

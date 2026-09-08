@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { cobrowseCode, startAssistance } from "../main.jsx";
 import {
   BrowserAudioInterface,
   ConversationAgent,
@@ -59,15 +60,6 @@ function setGuided(on) {
 }
 
 /** The co-browse code this page was opened with, so the agent can see the screen. */
-function cobrowseCode() {
-  try {
-    const raw = new URLSearchParams(window.location.search).get("cb") ?? "";
-    return raw.split("_")[0] || "";
-  } catch {
-    return "";
-  }
-}
-
 export function AssistantButton() {
   const [state, setState] = useState("idle"); // idle | connecting | live | error
   const [error, setError] = useState("");
@@ -88,6 +80,11 @@ export function AssistantButton() {
     setError("");
     setState("connecting");
     try {
+      // Open the screen session FIRST. Starting the voice agent before there is a
+      // session puts it on the line with no idea what the customer is looking at,
+      // which reads to them as a broken assistant rather than a missing session.
+      await startAssistance();
+
       const res = await fetch(`${WORKER}/api/extension/session`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
