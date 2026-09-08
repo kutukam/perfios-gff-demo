@@ -18,9 +18,6 @@ import axisLogo from "./figma/axis-logo.png";
 import iosKeyboard from "./figma/ios-keyboard.png";
 import msgAvatar from "./figma/msg-avatar.png";
 import notifAppIcon from "./figma/notif-app-icon.png";
-import livenessCamera from "./figma/liveness-camera.png";
-import livenessCapture from "./figma/liveness-capture.png";
-import livenessLocationBlur from "./figma/liveness-location-blur.png";
 import enachRing from "./figma/lottie-enach-loader.png";
 import nsdlAadhaar from "./figma/nsdl-page-aadhaar.png";
 import nsdlAadhaarFilled from "./figma/nsdl-page-aadhaar-filled.png";
@@ -48,9 +45,6 @@ export const MARK_SUCCESS = markSuccess;      /* 106x106 */
 export const AXIS_LOGO = axisLogo;            /* 24x20, slot 24x24 */
 
 /* Active Liveness */
-export const LIVENESS_CAMERA = livenessCamera;             /* 430x569 */
-export const LIVENESS_CAPTURE = livenessCapture;           /* 320x440 */
-export const LIVENESS_LOCATION_BLUR = livenessLocationBlur;/* 430x810 */
 
 /* E-Nach redirect ring. The Lottie placeholder sits *under* a separate
    text layer in Figma, so the export has the copy baked in — this tile

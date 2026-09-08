@@ -1,11 +1,8 @@
+import { useEffect, useRef, useState } from "react";
 import { TopSection, Bottom, Button, Icon } from "../components/index.jsx";
-import {
-  LIVENESS_CAMERA,
-  LIVENESS_CAPTURE,
-  LIVENESS_LOCATION_BLUR,
-} from "../assets/figmaAssets.js";
 import { livenessCopy as C } from "../data/journey.js";
 import { CameraView } from "../demo/camera.jsx";
+import { FACE_PLACEHOLDER, SCREEN_BACKDROP } from "../demo/placeholder.js";
 
 function PoweredBy() {
   return <Bottom />;
@@ -14,7 +11,7 @@ function PoweredBy() {
 export function LocationAccess({ onAllow, onDeny, hint }) {
   return (
     <div className="screen">
-      <img src={LIVENESS_LOCATION_BLUR} alt="" className="location-blur" />
+      <img src={SCREEN_BACKDROP} alt="" className="location-blur" />
       <TopSection />
       <div className="screen__body screen__body--center">
         <div className="dialog">
@@ -58,7 +55,7 @@ export function VideoLiveness({
       <CameraView
         stream={stream}
         videoRef={videoRef}
-        fallback={LIVENESS_CAMERA}
+        fallback={FACE_PLACEHOLDER}
         className="liveness__camera"
       />
       <div className="liveness__panel">
@@ -136,7 +133,77 @@ function StopButton({ progress, onClick, hint }) {
   );
 }
 
-export function ConfirmVideo({ onRetake, onConfirm, hint, capture }) {
+/**
+ * The video that was actually recorded — not a picture of one.
+ *
+ * The play button here used to be decoration: a round icon painted over a still, above
+ * a clip that was recorded and then never shown to anybody. It plays the real thing
+ * now, and only falls back to the frozen frame (and then to a drawn placeholder) when
+ * there is no clip to play, which means there was no camera to record it with.
+ */
+function Preview({ clip, capture }) {
+  const ref = useRef(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const sync = () => setPlaying(!el.paused && !el.ended);
+    ["play", "pause", "ended"].forEach((e) => el.addEventListener(e, sync));
+    return () => ["play", "pause", "ended"].forEach((e) => el.removeEventListener(e, sync));
+  }, [clip]);
+
+  const toggle = () => {
+    const el = ref.current;
+    if (!el) return;
+    if (el.paused || el.ended) el.play().catch(() => {});
+    else el.pause();
+  };
+
+  return (
+    <div className="preview">
+      {clip ? (
+        <video ref={ref} src={clip} playsInline preload="metadata" aria-label="The video you just recorded" />
+      ) : (
+        <img
+          src={capture || FACE_PLACEHOLDER}
+          alt={capture ? "The frame just captured from your camera" : ""}
+        />
+      )}
+      {/* Only offer to play something there is something to play. A play button over a
+          still frame is the decoration this screen used to ship. */}
+      {clip && (
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? "Pause the video" : "Play the video"}
+        style={{
+          position: "absolute",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%,-50%)",
+          width: 40,
+          height: 40,
+          padding: 0,
+          border: "none",
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.9)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+          opacity: playing ? 0 : 1,
+          transition: "opacity .15s",
+        }}
+      >
+        <Icon name="play_arrow" filled style={{ fontSize: 22, color: "#212121" }} />
+      </button>
+      )}
+    </div>
+  );
+}
+
+export function ConfirmVideo({ onRetake, onConfirm, hint, capture, clip }) {
   return (
     <div className="screen screen--white">
       <TopSection />
@@ -145,29 +212,7 @@ export function ConfirmVideo({ onRetake, onConfirm, hint, capture }) {
           <h2>{C.confirmTitle}</h2>
           <p>{C.confirmSub}</p>
         </div>
-        <div className="preview">
-          <img
-            src={capture || LIVENESS_CAPTURE}
-            alt={capture ? "The frame just captured from your camera" : ""}
-          />
-          <div
-            style={{
-              position: "absolute",
-              left: "50%",
-              top: "50%",
-              transform: "translate(-50%,-50%)",
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "rgba(255,255,255,0.9)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon name="play_arrow" filled style={{ fontSize: 22, color: "#212121" }} />
-          </div>
-        </div>
+        <Preview clip={clip} capture={capture} />
       </div>
       <div className="liveness__panel">
         <div className="split">

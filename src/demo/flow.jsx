@@ -166,11 +166,12 @@ function LiveLiveness({ go, stage, progress, cta }) {
       progress={progress}
       stream={cam.stream}
       videoRef={cam.videoRef}
-      onStart={cta === "start" ? go : undefined}
+      onStart={cta === "start" ? () => { cam.record(); go(); } : undefined}
       onStop={
         cta === "stop"
-          ? () => {
-              cam.snap();
+          ? async () => {
+              cam.snap();                 // while the live feed is still on screen
+              await cam.stopRecording();  // the clip only exists once the recorder stops
               go();
             }
           : undefined
@@ -185,6 +186,7 @@ function LiveConfirmVideo({ go, jump }) {
   return (
     <ConfirmVideo
       capture={cam.capture}
+      clip={cam.clip}
       onConfirm={() => {
         cam.stop(); // the liveness section is over — turn the camera off
         go();

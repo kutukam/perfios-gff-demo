@@ -20,6 +20,14 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
    out is part of the demo being honest.
    ============================================================ */
 
+/* Ordered best-first; Safari only takes the last one. */
+const CLIP_TYPES = [
+  "video/webm;codecs=vp9,opus",
+  "video/webm;codecs=vp8,opus",
+  "video/webm",
+  "video/mp4",
+];
+
 const Ctx = createContext(null);
 
 export function useCamera() {
@@ -32,14 +40,79 @@ export function CameraProvider({ children }) {
   const [stream, setStream] = useState(null);
   const [error, setError] = useState(null);
   const [capture, setCapture] = useState(null);
+  const [clip, setClip] = useState(null);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const recorderRef = useRef(null);
+  const chunksRef = useRef([]);
+  const clipRef = useRef(null);
+
+  const dropClip = useCallback(() => {
+    if (clipRef.current) {
+      try { URL.revokeObjectURL(clipRef.current); } catch { /* already gone */ }
+    }
+    clipRef.current = null;
+    setClip(null);
+  }, []);
+
+  /**
+   * Record, and RESOLVE ONLY ONCE THE CLIP EXISTS.
+   *
+   * `MediaRecorder.stop()` returns straight away; the blob is assembled in `onstop`, a
+   * task later. Anything that navigates in the same tick as the stop sees no clip at
+   * all — which is exactly how the sibling KYC journey ended up showing a stand-in
+   * picture on its "confirm your video" screen for every customer who ever used it.
+   */
+  const record = useCallback(() => {
+    const live = streamRef.current;
+    if (!live || typeof MediaRecorder === "undefined") return;
+    const type = CLIP_TYPES.find((c) => MediaRecorder.isTypeSupported?.(c));
+    let recorder;
+    try {
+      recorder = new MediaRecorder(live, type ? { mimeType: type } : undefined);
+    } catch {
+      return;                       // no recorder: the still is still captured on stop
+    }
+    chunksRef.current = [];
+    recorder.ondataavailable = (e) => { if (e.data?.size) chunksRef.current.push(e.data); };
+    recorder.onstop = () => {
+      try {
+        dropClip();
+        if (chunksRef.current.length) {
+          const url = URL.createObjectURL(
+            new Blob(chunksRef.current, { type: recorder.mimeType || "video/webm" }),
+          );
+          clipRef.current = url;
+          setClip(url);
+        }
+      } catch { /* the confirm screen falls back to the still frame */ }
+      chunksRef.current = [];
+    };
+    recorderRef.current = recorder;
+    try { recorder.start(); } catch { recorderRef.current = null; }
+  }, [dropClip]);
+
+  const stopRecording = useCallback(() => {
+    const recorder = recorderRef.current;
+    recorderRef.current = null;
+    if (!recorder || recorder.state !== "recording") return Promise.resolve();
+    return new Promise((resolve) => {
+      let settled = false;
+      const done = () => { if (!settled) { settled = true; resolve(); } };
+      // `onstop` above was assigned first, so it runs first and the clip is ready here.
+      recorder.addEventListener("stop", done, { once: true });
+      // A recorder that never reports back must not strand the customer on this screen.
+      const guard = setTimeout(done, 1500);
+      try { recorder.stop(); } catch { clearTimeout(guard); done(); }
+    });
+  }, []);
 
   const stop = useCallback(() => {
+    stopRecording();
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setStream(null);
-  }, []);
+  }, [stopRecording]);
 
   const start = useCallback(async () => {
     if (streamRef.current) return;
@@ -48,11 +121,14 @@ export function CameraProvider({ children }) {
       return;
     }
     try {
-      const got = await navigator.mediaDevices.getUserMedia({
-        // Front camera, portrait-ish: the design's window is 430x569.
-        video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } },
-        audio: false,
-      });
+      // Front camera, portrait-ish: the design's window is 430x569. Audio matters here
+      // — the customer is asked to read four digits ALOUD, so a liveness clip without
+      // sound proves half of what the step exists to prove. A machine with no
+      // microphone still works: it falls back to video only rather than failing shut.
+      const video = { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } };
+      const got = await navigator.mediaDevices
+        .getUserMedia({ video, audio: true })
+        .catch(() => navigator.mediaDevices.getUserMedia({ video, audio: false }));
       streamRef.current = got;
       setStream(got);
       setError(null);
@@ -81,13 +157,15 @@ export function CameraProvider({ children }) {
     return url;
   }, []);
 
-  const reset = useCallback(() => setCapture(null), []);
+  const reset = useCallback(() => { setCapture(null); dropClip(); }, [dropClip]);
 
   /* Never leave the camera on because a demo was abandoned. */
   useEffect(() => stop, [stop]);
 
   return (
-    <Ctx.Provider value={{ stream, error, capture, videoRef, start, stop, snap, reset }}>
+    <Ctx.Provider
+      value={{ stream, error, capture, clip, videoRef, start, stop, snap, reset, record, stopRecording }}
+    >
       {children}
     </Ctx.Provider>
   );

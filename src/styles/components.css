@@ -1347,10 +1347,26 @@ html.is-authoring .hint::after {
   gap: var(--space-md);
 }
 
+/*
+ * The backdrop behind the location dialog.
+ *
+ * It is absolutely positioned and the dialog above it is not, so paint order put the
+ * backdrop ON TOP of the real dialog. That went unnoticed for as long as the backdrop
+ * was a SCREENSHOT with a dialog baked into it: what looked like the dialog was the
+ * picture, and the buttons people actually clicked sat invisible underneath, slightly
+ * offset from the painted ones. Now that the backdrop is a plain field, it has to say
+ * out loud that it belongs behind.
+ */
 .location-blur {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 0;
+}
+
+.location-blur ~ .screen__body {
+  position: relative;
+  z-index: 1;
 }
