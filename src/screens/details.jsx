@@ -1,202 +1,115 @@
-import { TopSection, Bottom, Footer, Button, Field } from "../components/index.jsx";
+import {
+  TopSection,
+  Bottom,
+  Footer,
+  Button,
+  Field,
+  Heading,
+} from "../components/index.jsx";
 import { details } from "../data/journey.js";
 
-/* ============================================================
-   Details / PAN AADHAAR                    6031:16558   (932)
-   Details / PAN AADHAAR / Address          6031:16775  (1166)
-   Details / PAN AADHAAR / Address Filled   6031:16815  (1166)
-   ------------------------------------------------------------
-   The blue "info from pan" card holds Full Name + Date of Birth
-   side by side (two 169px fields) then the Aadhaar address as a
-   full-width block. Below it, the toggle; when on, three fields
-   plus a City/State pair reveal and the frame grows to 1166.
-   ============================================================ */
-
-function InfoCard() {
-  return (
-    <div
-      style={{
-        width: 382,
-        background: "var(--card-bg)",
-        border: "1.6px solid var(--card-stroke)",
-        borderRadius: 8,
-        padding: "12px 16px 16px",
-      }}
-    >
-      <p
-        className="ff-inter"
-        style={{
-          fontWeight: 700,
-          fontSize: 20,
-          lineHeight: "32px",
-          color: "var(--gray-900)",
-        }}
-      >
-        {details.cardTitle}
-      </p>
-
-      <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-        <ReadOut
-          label={details.fullNameLabel}
-          value={details.fullName}
-          width={169}
-        />
-        <ReadOut label={details.dobLabel} value={details.dob} width={169} />
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <ReadOut
-          label={details.addressLabel}
-          value={details.address}
-          width={342}
-          wrap
-        />
-      </div>
-    </div>
-  );
-}
-
-/* A label/value read-out with no field chrome — this is how the
-   "Fields" instances render inside the blue card. */
-function ReadOut({ label, value, width, wrap = false }) {
-  return (
-    <div style={{ width, display: "flex", flexDirection: "column", gap: 2 }}>
-      <p className="field__label">{label}</p>
-      <p
-        className="field__value"
-        style={wrap ? { whiteSpace: "normal", lineHeight: "28px" } : undefined}
-      >
-        {value}
-      </p>
-    </div>
-  );
+export function currentKey(key) {
+  return `current_${key}`;
 }
 
 function Toggle({ on, onClick, hint }) {
   return (
     <div
-      className={`${hint ? "hint " : ""}${onClick ? "is-tappable" : ""}`}
-      style={{ display: "flex", gap: 12, alignItems: "center", width: 382 }}
+      className={`toggle${hint ? " hint" : ""}${onClick ? " is-tappable" : ""}`}
       onClick={onClick}
     >
-      <div
-        style={{
-          width: 40,
-          height: 20,
-          borderRadius: 100,
-          background: on ? "var(--primary)" : "var(--gray-400)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: on ? "flex-end" : "flex-start",
-          padding: 2,
-          flex: "none",
-        }}
-      >
-        <div
-          style={{
-            width: 16,
-            height: 16,
-            borderRadius: "50%",
-            background: "var(--white-000)",
-          }}
-        />
+      <div className={`toggle__track${on ? " is-on" : ""}`}>
+        <div className="toggle__knob" />
       </div>
-      <p style={{ fontSize: 16, lineHeight: "20px", color: "var(--gray-900)" }}>
+      <p style={{ fontSize: "var(--text-md)", lineHeight: 1.25, color: "var(--gray-900)" }}>
         {details.toggle}
       </p>
     </div>
   );
 }
 
+function Fields({ items, live, values, onChangeField, prefix = "", hintFirst }) {
+  return items.map((f, i) => {
+    const key = prefix ? currentKey(f.key) : f.key;
+    return live ? (
+      <Field
+        key={key}
+        label={f.label}
+        placeholder={f.placeholder || f.label}
+        editable
+        value={values?.[key] ?? ""}
+        onChange={(v) => onChangeField(key, v)}
+        options={f.options}
+        trailingIcon={f.options ? "expand_more" : undefined}
+        hint={hintFirst && i === 0}
+      />
+    ) : (
+      <Field
+        key={key}
+        placeholder={f.placeholder || f.label}
+        trailingIcon={f.options ? "expand_more" : undefined}
+        hint={hintFirst && i === 0}
+      />
+    );
+  });
+}
+
+function filled(items, values, prefix = "") {
+  return items.every((f) => values?.[prefix ? currentKey(f.key) : f.key]);
+}
+
 export function DetailsScreen({
   address = false,
-  filled = false,
-  /* Demo view: `values` is keyed by field label, `onChangeField` edits one.
-     Frames and Canvas pass neither, so they keep the static filled state. */
   values,
   onChangeField,
   onToggle,
-  onFill,
   onNext,
   hint,
 }) {
   const live = Boolean(onChangeField);
-  const typed = live && details.form.some((f) => values?.[f.label]);
-  const isFilled = filled || typed;
-  const tall = address;
+  const profileOk =
+    !live ||
+    (filled(details.identity, values) && filled(details.address, values));
+  const extraOk = !live || !address || filled(details.address, values, "current");
   return (
-    <div className="screen" style={{ height: tall ? 1166 : 932 }}>
-      <div
-        style={{
-          position: "absolute",
-          left: 24,
-          top: 154,
-          width: 382,
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-      >
-        <InfoCard />
-        <div style={{ paddingTop: 16 }}>
-          <Toggle on={address} onClick={onToggle} hint={hint === "toggle"} />
+    <div className="screen">
+      <TopSection />
+      <div className="screen__body">
+        <Heading title={details.title} sub={details.sub} />
+        <div className="stack">
+          <Fields
+            items={details.identity}
+            live={live}
+            values={values}
+            onChangeField={onChangeField}
+            hintFirst={hint === "field" && !address}
+          />
+          <Fields
+            items={details.address}
+            live={live}
+            values={values}
+            onChangeField={onChangeField}
+          />
         </div>
-
+        <Toggle on={address} onClick={onToggle} hint={hint === "toggle"} />
         {address && (
-          <div
-            style={{
-              paddingTop: 22,
-              display: "flex",
-              flexDirection: "column",
-              gap: 16,
-            }}
-          >
-            {details.form.map((f) =>
-              live ? (
-                <Field
-                  key={f.label}
-                  label={f.label}
-                  placeholder={f.label}
-                  editable
-                  value={values?.[f.label] ?? ""}
-                  onChange={(v) => onChangeField(f.label, v)}
-                  onClick={onFill}
-                  hint={hint === "field" && f === details.form[0]}
-                />
-              ) : filled ? (
-                <Field key={f.label} label={f.label} value={f.value} />
-              ) : (
-                <Field
-                  key={f.label}
-                  placeholder={f.label}
-                  onClick={onFill}
-                  hint={hint === "field" && f === details.form[0]}
-                />
-              )
-            )}
-
-            <div style={{ display: "flex", gap: 24, paddingTop: 4 }}>
-              <ReadOut
-                label={details.city.label}
-                value={isFilled ? details.city.value : details.city.empty}
-                width={179}
-              />
-              <ReadOut
-                label={details.state.label}
-                value={isFilled ? details.state.value : details.state.empty}
-                width={179}
-              />
-            </div>
+          <div className="stack">
+            <Fields
+              items={details.address}
+              live={live}
+              values={values}
+              onChangeField={onChangeField}
+              prefix="current"
+              hintFirst={hint === "field"}
+            />
           </div>
         )}
       </div>
-
-      <TopSection />
       <Footer>
-        <div className="footer__action" style={{ width: 382 }}>
+        <div className="footer__action">
           <Button
             label={address ? details.ctaAddress : details.cta}
-            disabled={live && address && !isFilled}
+            disabled={!profileOk || !extraOk}
             onClick={onNext}
             hint={hint === "cta"}
           />

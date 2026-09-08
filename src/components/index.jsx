@@ -28,104 +28,11 @@ export function Icon({ name, light, filled, className = "", style, onClick }) {
   );
 }
 
-/* ============================================================
-   Status bar glyphs. The file uses SF Symbols (cellularbars, wifi,
-   battery.50percent); these are drawn to the same footprint.
-   ============================================================ */
-function StatusGlyphs() {
-  return (
-    <div className="chrome__glyphs">
-      <svg width="18" height="12" viewBox="0 0 18 12" fill="currentColor">
-        <rect x="0" y="8" width="3" height="4" rx="1" />
-        <rect x="5" y="6" width="3" height="6" rx="1" />
-        <rect x="10" y="3" width="3" height="9" rx="1" />
-        <rect x="15" y="0" width="3" height="12" rx="1" />
-      </svg>
-      <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
-        <path d="M8 11.2 6.1 9.1a2.6 2.6 0 0 1 3.8 0L8 11.2Z" />
-        <path
-          d="M3.6 6.4a6.4 6.4 0 0 1 8.8 0"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M1.1 3.6a10 10 0 0 1 13.8 0"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          fill="none"
-          strokeLinecap="round"
-        />
-      </svg>
-      <svg width="25" height="12" viewBox="0 0 25 12" fill="none">
-        <rect
-          x="0.5"
-          y="0.5"
-          width="21"
-          height="11"
-          rx="3"
-          stroke="currentColor"
-          strokeOpacity="0.5"
-        />
-        <rect x="2" y="2" width="9.5" height="8" rx="2" fill="currentColor" />
-        <path
-          d="M23 4v4a2.2 2.2 0 0 0 0-4Z"
-          fill="currentColor"
-          fillOpacity="0.5"
-        />
-      </svg>
-    </div>
-  );
-}
-
-function LockGlyph() {
-  return (
-    <svg width="9" height="12" viewBox="0 0 9 12" fill="#fff" aria-hidden="true">
-      <path d="M4.5 0a2.6 2.6 0 0 0-2.6 2.6v1.3H1.5A1.5 1.5 0 0 0 0 5.4v5.1A1.5 1.5 0 0 0 1.5 12h6A1.5 1.5 0 0 0 9 10.5V5.4a1.5 1.5 0 0 0-1.5-1.5h-.4V2.6A2.6 2.6 0 0 0 4.5 0Zm1.6 3.9H2.9V2.6a1.6 1.6 0 0 1 3.2 0v1.3Z" />
-    </svg>
-  );
-}
-
-/* ============================================================
-   TOP SECTION — 430x122. Three variants in the file:
-   "logo"  = brand mark only, navy icons  (landing screen)
-   "back"  = arrow_back + brand mark, gray icons (every step after)
-   ============================================================ */
-export function TopSection({ variant = "back", url = "pcg.perfios.com/personal_loan", time = "2:55" }) {
+export function TopSection({ variant = "back" }) {
   const withBack = variant === "back";
-  /* "bare" is the 66px chrome the E-Nach screens use: browser bands
-     only, no Acme topbar. */
-  if (variant === "bare") {
-    return (
-      <div className="top-section">
-        <div className="chrome__status">
-          <p className="chrome__time">{time}</p>
-          <StatusGlyphs />
-        </div>
-        <div className="chrome__address">
-          <div className="chrome__address-inner">
-            <LockGlyph />
-            <div className="chrome__url">{url}</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (variant === "bare") return null;
   return (
     <div className="top-section">
-      <div className="chrome__status">
-        <p className="chrome__time">{time}</p>
-        <StatusGlyphs />
-      </div>
-
-      <div className="chrome__address">
-        <div className="chrome__address-inner">
-          <LockGlyph />
-          <div className="chrome__url">{url}</div>
-        </div>
-      </div>
-
       <div className={`topbar${withBack ? " topbar--back" : ""}`}>
         <div className="topbar__left">
           {withBack && <Icon name="arrow_back" className="topbar__back" />}
@@ -150,22 +57,15 @@ export function TopSection({ variant = "back", url = "pcg.perfios.com/personal_l
    BOTTOM — "Powered by Perfios" + home indicator.
    `perfios={false}` gives the 32px indicator-only variant.
    ============================================================ */
-export function Bottom({ perfios = true, absolute = false, width }) {
+export function Bottom({ perfios = true, absolute = false }) {
+  if (!perfios) return null;
   return (
-    <div
-      className={`bottom${absolute ? " bottom--abs" : ""}`}
-      style={width ? { width } : undefined}
-    >
-      {perfios && (
-        <div className="bottom__perfios">
-          <p className="bottom__perfios-label">Powered by</p>
-          <div className="bottom__perfios-logo">
-            <img src={PERFIOS_LOGO} alt="Perfios" />
-          </div>
+    <div className={`bottom${absolute ? " bottom--abs" : ""}`}>
+      <div className="bottom__perfios">
+        <p className="bottom__perfios-label">Powered by</p>
+        <div className="bottom__perfios-logo">
+          <img src={PERFIOS_LOGO} alt="Perfios" />
         </div>
-      )}
-      <div className="bottom__indicator">
-        <div className="bottom__indicator-bar" />
       </div>
     </div>
   );
@@ -254,22 +154,17 @@ export function Field({
   onChange,
   inputMode,
   maxLength,
+  options,
 }) {
   const input = useRef(null);
   /* An editable field is stacked once it holds something, which is the
      same label-above-value shape the "filled" frames use. */
   const stacked = editable ? Boolean(value) : Boolean(label);
 
-  /* Tapping an empty editable field fills it with the demo value and
-     selects it, so the next keystroke replaces it. Tapping a filled one
-     just places the caret. */
+  /* Tapping an editable field only focuses it — values are typed, not filled. */
   const handleClick = editable
     ? () => {
-        if (!value) onClick?.();
-        requestAnimationFrame(() => {
-          input.current?.focus();
-          input.current?.select();
-        });
+        requestAnimationFrame(() => input.current?.focus());
       }
     : onClick;
 
@@ -290,33 +185,46 @@ export function Field({
         )}
 
         {editable ? (
-          /* One input either way — keyed so React keeps the same DOM node
-             when the box restacks on the first keystroke and focus holds. */
           <div className={stacked ? "field__container--stacked" : "field__container"}>
             {stacked && (
               <p className="field__label" key="label">
                 {label ?? placeholder}
               </p>
             )}
-            <input
-              key="input"
-              ref={input}
-              className={`${
-                brandPlaceholder && !stacked
-                  ? "field__placeholder-brand"
-                  : "field__value"
-              } field__input`}
-              value={value ?? ""}
-              placeholder={placeholder}
-              onChange={(e) => onChange?.(e.target.value)}
-              inputMode={inputMode}
-              maxLength={maxLength}
-              autoComplete="off"
-              /* the visible label moves above the value once the box fills, so
-                 the accessible name is pinned here instead — it is what the
-                 co-browse page model reads. */
-              aria-label={label ?? placeholder}
-            />
+            {options ? (
+              <select
+                key="select"
+                ref={input}
+                className="field__value field__input field__select"
+                value={value ?? ""}
+                onChange={(e) => onChange?.(e.target.value)}
+                aria-label={label ?? placeholder}
+              >
+                <option value="">{placeholder || "Select"}</option>
+                {options.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                key="input"
+                ref={input}
+                className={`${
+                  brandPlaceholder && !stacked
+                    ? "field__placeholder-brand"
+                    : "field__value"
+                } field__input`}
+                value={value ?? ""}
+                placeholder={placeholder}
+                onChange={(e) => onChange?.(e.target.value)}
+                inputMode={inputMode}
+                maxLength={maxLength}
+                autoComplete="off"
+                aria-label={label ?? placeholder}
+              />
+            )}
           </div>
         ) : stacked ? (
           <div className="field__container--stacked">
@@ -382,6 +290,7 @@ export function Consent({ checked = false, onClick, hint = false }) {
       className={`consent${hint ? " hint" : ""}`}
       type="button"
       onClick={onClick}
+      aria-pressed={checked}
       aria-label="I have read and accepted Most Important Terms and Conditions (MITC)"
     >
       <Icon
@@ -557,19 +466,11 @@ export function Choice({
    renders is the rupee mark, 52x52 centred at (189,429), with the
    caption below at the y each frame specifies.
    ============================================================ */
-export function Loader({ caption, captionTop = 552 }) {
+export function Loader({ caption }) {
   return (
-    <>
-      <img
-        src={MARK_RUPEE}
-        alt=""
-        style={{ position: "absolute", left: 189, top: 429, width: 52, height: 52 }}
-      />
-      {caption && (
-        <p className="loader__caption ff-inter" style={{ top: captionTop }}>
-          {caption}
-        </p>
-      )}
-    </>
+    <div className="loader">
+      <img src={MARK_RUPEE} alt="" className="loader__mark" />
+      {caption && <p className="loader__caption ff-inter">{caption}</p>}
+    </div>
   );
 }

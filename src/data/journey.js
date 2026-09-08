@@ -237,24 +237,67 @@ export const loaders = {
    below is the sibling section's figure and may need swapping.
    ============================================================ */
 
-/* Details from Aadhaar & PAN — 6031:16558 / 16775 / 16815 */
+/* States and union territories, for the address State dropdown */
+export const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
+
+/* Applicant details — entered by the customer, not fetched from KYC APIs */
 export const details = {
-  cardTitle: "Details from Aadhaar & PAN",
-  fullNameLabel: "Full Name",
-  fullName: "Vikas Kumar",
-  dobLabel: "Date of Birth",
-  dob: "23/03/1995",
-  addressLabel: "Aadhaar Address",
-  address:
-    "Apt No. 410, Wallace Garden, 1st Street, Thousand Lights West, Nungambakkam, Chennai, Tamil Nadu – 600 008",
-  toggle: "My Current Address is different from Aadhaar",
-  form: [
-    { label: "Address Line 1 *", value: "102 - A Block, Shipra Sun City" },
-    { label: "Address Line 2 *", value: "Sector 22" },
-    { label: "Pincode *", value: "201301" },
+  title: "Enter your details",
+  sub: "Please share your personal details to continue",
+  identity: [
+    { key: "fullName", label: "Full Name *" },
+    { key: "dob", label: "Date of Birth *" },
   ],
-  city: { label: "City *", value: "Noida", empty: "--" },
-  state: { label: "State *", value: "Uttar Pradesh", empty: "--" },
+  address: [
+    { key: "line1", label: "Address Line 1 *" },
+    { key: "line2", label: "Address Line 2 *" },
+    { key: "pincode", label: "Pincode *" },
+    { key: "city", label: "City *" },
+    {
+      key: "state",
+      label: "State *",
+      placeholder: "Select state",
+      options: INDIAN_STATES,
+    },
+  ],
+  toggle: "My current address is different",
   cta: "Next",
   ctaAddress: "Save and Next",
 };
@@ -320,8 +363,9 @@ export const nsdlChrome = {
   /* The VID/Aadhaar box and the Send OTP / Verify OTP pill are baked into
      the raster, so the demo overlays them. Rects are measured off the
      390x583 export, which sits at (20,154) 1:1 — see esign.jsx. */
-  field: { left: 166, top: 608, width: 210, height: 30 },
-  pill: { left: 55, top: 645, width: 74, height: 29 },
+  /* Overlay hit-areas are percentages of the NSDL raster, not pixels. */
+  field: { left: "37.44%", top: "77.87%", width: "53.85%", height: "5.15%" },
+  pill: { left: "8.97%", top: "84.22%", width: "18.97%", height: "4.97%" },
   otp: "356284" /* FROM-EXPORT */,
   copyright: "@2023 NSDL E-Governance Infrastructure Pvt. Ltd. All right reserved",
   warning:

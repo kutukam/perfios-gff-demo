@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import "./styles/base.css";
 import "./styles/components.css";
 import "./styles/app.css";
@@ -30,225 +30,25 @@ import { loaders } from "./data/journey.js";
 import { useDemo } from "./demo/flow.jsx";
 import { AssistantButton } from "./demo/assistant.jsx";
 
-/* ============================================================
-   FIT — one phone frame, any screen it is shown on.
-   ------------------------------------------------------------
-   Every frame is authored at exactly 430 x (its own height) and
-   its children are absolutely positioned to Figma's coordinates,
-   so the layout cannot reflow without giving up the fidelity the
-   whole reimplementation exists for. It scales instead: the frame
-   keeps its geometry and the browser draws it larger or smaller
-   so the WHOLE phone is visible, on a 360px handset and on an
-   iPad alike.
-
-   It must be `transform: scale`, NOT `zoom`. Zoom is tidier —
-   it scales the layout box, so nothing has to reserve space by
-   hand — but it desynchronises the two coordinate systems the
-   co-browse overlay bridges: the SDK reads a target with
-   getBoundingClientRect (visual pixels) and places its ring in
-   document space using scrollY (layout pixels). Under zoom those
-   differ by scrollY x (1 - zoom), and the ring was measured
-   landing 130px below the field it was pointing at. A transform
-   leaves the viewport-to-document mapping alone, so the ring is
-   exact; the cost is reserving the scaled box ourselves, which
-   is what `.flow__fit` below does.
-   ============================================================ */
-const FRAME_W = 430;
-/* The frames draw a phone's OWN chrome — a status bar with a fake clock and a
-   browser address bar — because in Figma the frame is the phone. On a real
-   phone that lands directly under the device's actual status bar and URL bar:
-   two clocks, two address bars, and the illusion dies. Those bands are the top
-   66px of every frame, so on a real phone the frame is cropped by exactly that
-   much and every coordinate inside it stays where the design put it. */
-const CHROME_H = 66;
-/* On anything that is not itself a phone, the frame is shown INSIDE a phone —
-   a bezel, so the drawn status bar and address bar read as that phone's own
-   rather than as a second set of browser chrome floating on a desktop. The
-   reservation is generous on purpose: the bezel scales with the frame, and
-   under-reserving here clips it. */
-const BEZEL = 40;
-
-/* `fitRef` is the WRAPPER, not the scaled frame. Measuring the frame's own
-   parent would measure the box this hook sizes — available width would shrink
-   with the scale that shrank it, and the whole thing collapsed to the 0.4
-   floor on every screen. Measure the container the wrapper sits in. */
-function useFit(fitRef) {
-  const [box, setBox] = useState({ fit: 1, h: 932, crop: 0, bezel: false });
-
-  const measure = useCallback(() => {
-    const wrap = fitRef.current;
-    const frame = wrap?.querySelector(".screen");
-    if (!wrap || !frame) return;
-    // offsetHeight is the UNTRANSFORMED box, which is what we scale from.
-    const frameH = frame.offsetHeight || 932;
-    /* Measure the VIEWPORT, not a container.
-     *
-     * Two ways this went wrong. Measuring the wrapper's own parent measured the
-     * box this hook sizes, so width shrank with the scale that shrank it and
-     * everything collapsed to the floor. Measuring the container instead put the
-     * page on the scrollbar threshold: fits, no scrollbar, wider, scale up,
-     * no longer fits, scrollbar, narrower, scale down — React gave up with
-     * "Maximum update depth exceeded" and rendered nothing at all.
-     *
-     * documentElement.clientWidth is the one number in this chain that no scale
-     * and no scrollbar feeds back into. */
-    const vw = document.documentElement.clientWidth;
-    /* A phone gets the full width: a real page on a phone runs edge to edge,
-       not as a card floating in a grey margin. */
-    const availW = vw < 640 ? vw : vw - 32;
-    /* Reserve only what is actually on the page. Both the title bar and the
-       step nav are gone from the demo view now, and still subtracting a 56px
-       fallback for each left the frame 188px shorter than the screen — a phone
-       showing the journey in the top three-quarters with grey underneath. */
-    const bar = document.querySelector(".app__bar")?.offsetHeight ?? 0;
-    const nav = document.querySelector(".flow__nav")?.offsetHeight ?? 0;
-    const gap = nav ? 76 : 16; // the floating nav needs room; nothing else does
-    const availH = window.innerHeight - bar - nav - gap;
-
-    /* ALWAYS fit the whole frame, on a phone too.
-       Filling the width and letting the page scroll read better, but the
-       co-browse ring is drawn from the target's viewport rect and does not
-       follow page scroll: measured on the e-Nach screen, the ring sat exactly
-       on the Submit button at scrollY 0 and stayed put while the button moved
-       85px away. A demo whose highlight is wrong the moment someone scrolls is
-       worse than a slightly smaller phone, so the page never scrolls. */
-    /* A real phone supplies its own status and address bars, so the drawn ones
-       come off. Anywhere else they stay and get a bezel around them. */
-    const phone = window.innerWidth < 640;
-    const crop = phone ? CHROME_H : 0;
-    const bezel = phone ? 0 : BEZEL;
-    const shown = frameH - crop;
-    /* On a phone, fit the WIDTH and let the page be as tall as it is.
-       Fitting the height too is what left grey down both sides: a shorter
-       viewport (a mobile browser's toolbars eat ~90px) makes the height the
-       binding constraint, so the frame shrinks away from the edges.
-       Width-fitting overflows by a few dozen pixels at most — a page you
-       scroll, exactly like the real journey. Anywhere else the whole phone
-       still has to be visible at once, which is the point of the bezel. */
-    const wanted = phone
-      ? availW / FRAME_W
-      : Math.min((availW - bezel) / FRAME_W, (availH - bezel) / shown);
-
-    // Never below a legible floor, and never so large it stops reading as a phone.
-    const fit = Math.max(0.4, Math.min(wanted, 1.6));
-    /* Dead-band. Sub-pixel churn is invisible and re-rendering on it is how a
-       measure-then-resize loop stays alive; only a change worth seeing counts. */
-    setBox((b) =>
-      Math.abs(b.fit - fit) < 0.005 &&
-      b.h === shown &&
-      b.crop === crop &&
-      b.bezel === (bezel > 0)
-        ? b
-        : { fit, h: shown, crop, bezel: bezel > 0 }
-    );
-  }, [fitRef]);
-
-  /* Measure on mount, on a real resize, and when the FRAME changes size —
-     never simply "after every render". Re-measuring on every render means every
-     measurement can trigger the next one, and one sub-pixel disagreement is
-     then an infinite loop: React bailed out with "Maximum update depth
-     exceeded" and rendered a blank page. A ResizeObserver on the frame catches
-     the only thing that actually varies — a taller screen in the journey. */
-  useLayoutEffect(() => {
-    measure();
-    const frame = fitRef.current?.querySelector(".screen");
-    const ro =
-      typeof ResizeObserver !== "undefined" && frame
-        ? new ResizeObserver(() => measure())
-        : null;
-    if (frame && ro) ro.observe(frame);
-    window.addEventListener("resize", measure);
-    window.addEventListener("orientationchange", measure);
-    return () => {
-      ro?.disconnect();
-      window.removeEventListener("resize", measure);
-      window.removeEventListener("orientationchange", measure);
-    };
-  }, [measure, fitRef]);
-
-  return box;
-}
-
 function Stage({ children }) {
-  const ref = useRef(null);
-  const { fit, h, crop, bezel } = useFit(ref);
-  /* The bezel scales with the frame so a small phone on a laptop still looks
-     like a phone rather than a screen in a thick black picture frame. */
-  const pad = Math.round(13 * fit);
-  const body = (
-
-    /* The wrapper reserves what the scaled frame actually occupies; the frame
-       itself is scaled from its top-left so the two stay in register. `crop`
-       lifts the frame so its own phone chrome sits above the visible area. */
-    <div
-      className="flow__fit"
-      ref={ref}
-      style={{ width: FRAME_W * fit, height: h * fit }}
-    >
-      <div
-        className="flow__stage"
-        /* No height here: the frame is taller than the visible box by `crop`,
-           and a fixed height plus overflow:hidden clipped the BOTTOM of any
-           frame taller than the last measurement — which cut the e-Nach
-           Cancel/Submit row clean off. The wrapper does the clipping; it is
-           already exactly the visible size. */
-        style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
-      >
-        <div style={{ marginTop: -(crop || 0) }}>{children}</div>
-      </div>
-    </div>
-  );
-
-  if (!bezel) return body;
-  return (
-    <div
-      className="device"
-      style={{ padding: pad, borderRadius: Math.round(58 * fit) }}
-    >
-      <div
-        className="device__screen"
-        style={{ borderRadius: Math.round(46 * fit) }}
-      >
-        {body}
-        <span
-          className="device__island"
-          style={{
-            top: Math.round(11 * fit),
-            width: Math.round(104 * fit),
-            height: Math.round(28 * fit),
-            borderRadius: Math.round(16 * fit),
-          }}
-        />
-      </div>
-    </div>
-  );
+  return <div className="flow__stage">{children}</div>;
 }
 
 /* A sheet renders over the screen it belongs to, matching how the
    frames are stacked on the Figma canvas. */
 function WithSheet({ base, sheet }) {
   return (
-    <div className="screen" style={{ height: 932 }}>
-      <div style={{ position: "absolute", inset: 0 }}>{base}</div>
+    <div className="sheet-host">
+      {base}
       <Scrim />
       {sheet}
     </div>
   );
 }
 
-/* Floating overlays are not full frames; centre them on a neutral tile. */
-function Overlay({ children, h = 200 }) {
+function Overlay({ children }) {
   return (
-    <div
-      className="screen"
-      style={{
-        height: h,
-        background: "#e7ebf1",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <div className="screen screen__body screen__body--center">
       {children}
     </div>
   );
@@ -305,9 +105,9 @@ export const SCREENS = [
   { id: "6031:16992", name: "nsdl esign 66", el: <NsdlSuccess variant="drawn" /> },
   { id: "6031:16697", name: "Congratulations", el: <Congratulations /> },
   { id: "6031:16641", name: "Congratulations 7", el: <Congratulations disbursed /> },
-  { id: "6031:16753", name: "Notification - Collapsed", el: <Overlay h={120}><NotificationBanner /></Overlay> },
+  { id: "6031:16753", name: "Notification - Collapsed", el: <Overlay><NotificationBanner /></Overlay> },
   { id: "6031:16613", name: "Message 19", el: <MessageThread /> },
-  { id: "tooltip", name: "Tooltip", el: <Overlay h={140}><Tooltip /></Overlay> },
+  { id: "tooltip", name: "Tooltip", el: <Overlay><Tooltip /></Overlay> },
 ];
 
 /* ============================================================
@@ -387,7 +187,7 @@ export default function App() {
         <div className="app__title">
           PA/PQ &lt;&gt; Personal Loan Top Up
           <span className="app__meta">
-            6031:15453 · {SCREENS.length} frames · 430px
+            6031:15453 · {SCREENS.length} screens
           </span>
         </div>
         <div className="app__tabs">

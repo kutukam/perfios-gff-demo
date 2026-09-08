@@ -1,17 +1,18 @@
 /* ============================================================
    Design tokens — extracted from
    "Internal - Universal PCG Journeys" / PA-PQ <> Personal Loan Top Up
-   Every value here came out of the Figma file, not invented.
+   Layout sizes are fluid; type and colour stay on the design scale.
    ============================================================ */
 
 :root {
   /* --- Brand / semantic ------------------------------------ */
-  --primary: #0050aa;          /* primary                     */
-  --perfios-blue: #0050aa;     /* perfios-blue                */
-  --brand-navy: #10284a;       /* Acme headline + topbar icons*/
-  --chrome-bg: #272b3f;        /* browser chrome (Top Section)*/
-  --card-bg: #e9f1fd;          /* card-bg                     */
-  --card-stroke: #84b9f9;      /* card-storke [sic, as named] */
+  --primary: #0050aa;
+  --perfios-blue: #0050aa;
+  --brand-navy: #10284a;
+  --chrome-bg: #272b3f;
+  --card-bg: #e9f1fd;
+  --card-stroke: #84b9f9;
+  --page-bg: #eef1f6;
 
   /* --- Gray ramp ------------------------------------------- */
   --white-000: #ffffff;
@@ -26,18 +27,18 @@
 
   /* --- Blue ramp ------------------------------------------- */
   --blue-050: #e3f2fd;
-  --blue-100: #d7e7fc;         /* focus ring on Field-focus   */
-  --blue-300: #60a6f7;         /* focused field border        */
+  --blue-100: #d7e7fc;
+  --blue-300: #60a6f7;
   --blue-600: #1e88e5;
-  --blue-700: #1976d2;         /* MITC link                   */
-  --blue-800: #1565c0;         /* in-principle amount         */
+  --blue-700: #1976d2;
+  --blue-800: #1565c0;
 
   /* --- Green ----------------------------------------------- */
   --green-600: #43a047;
-  --green-800: #2e7d32;        /* field success check_circle  */
+  --green-800: #2e7d32;
 
   /* --- Asphalt --------------------------------------------- */
-  --asphalt-900: #263238;      /* sheet titles                */
+  --asphalt-900: #263238;
 
   /* --- Type ------------------------------------------------ */
   --font-ui: "Inter", "Inter Fallback", system-ui, sans-serif;
@@ -47,16 +48,51 @@
              "Helvetica Neue", system-ui, sans-serif;
   --font-icon: "Material Symbols Rounded";
 
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2.25rem;
+  --leading-tight: 1.25;
+  --leading-snug: 1.5;
+  --leading-body: 1.5;
+
+  /* --- Space ----------------------------------------------- */
+  --space-2xs: 0.125rem;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+  --space-3xl: 2.5rem;
+
   /* --- Geometry -------------------------------------------- */
-  --device-w: 430px;           /* every frame is 430 wide     */
-  --device-h: 932px;           /* standard frame height       */
-  --gutter: 24px;              /* content inset               */
-  --content-w: 382px;          /* 430 - 24*2                  */
-  --radius-field: 8px;
-  --radius-sheet: 32px;
+  --gutter: 1.5rem;
+  --layout-max: none;
+  --radius-field: 0.5rem;
+  --radius-sheet: 2rem;
+  --radius-dialog: 0.875rem;
+  --control-h: 3.5rem;
+  --topbar-h: 3.5rem;
+  --mark-lg: 6.625rem;
+  --mark-md: 3.25rem;
 
   /* --- Elevation ------------------------------------------- */
-  --shadow-topbar: 0px 4px 4px rgba(0, 0, 0, 0.08);
-  --shadow-footer: 0px -4px 8px rgba(0, 0, 0, 0.12);
-  --shadow-sheet: 0px -4px 8px rgba(0, 0, 0, 0.16);
+  --shadow-topbar: 0 0.25rem 0.25rem rgba(0, 0, 0, 0.08);
+  --shadow-footer: 0 -0.25rem 0.5rem rgba(0, 0, 0, 0.12);
+  --shadow-sheet: 0 -0.25rem 0.5rem rgba(0, 0, 0, 0.16);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --gutter: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 2.5rem;
+  }
 }

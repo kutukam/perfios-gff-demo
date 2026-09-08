@@ -95,7 +95,7 @@ export function CameraProvider({ children }) {
 
 /* The live feed, sized and positioned exactly where the design puts its
    camera still. Falls back to `fallback` when there is no stream. */
-export function CameraView({ stream, videoRef, fallback, style }) {
+export function CameraView({ stream, videoRef, fallback, style, className }) {
   const ref = videoRef;
   useEffect(() => {
     const el = ref?.current;
@@ -103,7 +103,7 @@ export function CameraView({ stream, videoRef, fallback, style }) {
   }, [ref, stream]);
 
   if (!stream) {
-    return <img src={fallback} alt="" style={{ ...style, objectFit: "cover" }} />;
+    return <img src={fallback} alt="" className={className} style={{ ...style, objectFit: "cover" }} />;
   }
   return (
     <video
@@ -112,6 +112,7 @@ export function CameraView({ stream, videoRef, fallback, style }) {
       playsInline
       muted
       aria-label="Camera preview"
+      className={className}
       style={{ ...style, objectFit: "cover", transform: "scaleX(-1)", background: "#000" }}
     />
   );

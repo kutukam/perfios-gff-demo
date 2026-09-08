@@ -1,190 +1,123 @@
-/* Shell chrome only — nothing here affects the fidelity of a frame. */
-/* No bottom padding: it reserved room for the floating step nav, which is gone.
-   Left in, it made the page 102px taller than the viewport on a laptop — and a
-   page that scrolls is a page the highlight ring drifts on. */
-.app { min-height: 100vh; background: #eef1f6; }
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-050);
+}
 
 .app__bar {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 24px; background: #10284a; color: #fff;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--gutter);
+  background: var(--brand-navy); color: #fff;
 }
-.app__title { font-size: 14px; font-weight: 600; letter-spacing: .2px; }
-.app__meta { display: block; font-weight: 400; opacity: .6; font-size: 12px; margin-top: 2px; }
-.app__tabs { display: flex; gap: 4px; background: rgba(255,255,255,.1); border-radius: 8px; padding: 3px; }
+.app__title { font-size: var(--text-sm); font-weight: 600; letter-spacing: .2px; min-width: 0; }
+.app__meta { display: block; font-weight: 400; opacity: .6; font-size: var(--text-xs); margin-top: 2px; }
+.app__tabs { display: flex; gap: 4px; background: rgba(255,255,255,.1); border-radius: 8px; padding: 3px; flex: none; }
 .app__tab { padding: 6px 14px; border-radius: 6px; font-size: 13px; color: rgba(255,255,255,.7); }
-.app__tab.is-on { background: #fff; color: #10284a; font-weight: 600; }
+.app__tab.is-on { background: #fff; color: var(--brand-navy); font-weight: 600; }
 
 .canvas {
-  display: flex; flex-wrap: wrap; gap: 40px 32px;
-  padding: 40px 24px; align-items: flex-start;
+  display: flex; flex-wrap: wrap; gap: var(--space-2xl) var(--space-xl);
+  padding: var(--space-2xl) var(--gutter); align-items: flex-start;
+  justify-content: center;
 }
-.canvas__item { margin: 0; }
+.canvas__item { margin: 0; width: min(100%, 28rem); }
 .canvas__frame {
   border-radius: 4px; overflow: hidden;
   box-shadow: 0 1px 2px rgba(16,40,74,.10), 0 12px 32px rgba(16,40,74,.10);
 }
+.canvas__frame .screen { min-height: 36rem; }
 .canvas__caption {
   display: flex; flex-direction: column; gap: 2px;
   margin-top: 10px; font-size: 12px; color: #55637a;
 }
 .canvas__caption code { font-size: 11px; color: #8b97ab; }
 
-/* Centre the phone in whatever height is left, and keep the padding symmetric —
-   an asymmetric 40px top with none at the bottom is what still pushed the page
-   22px past the viewport on a laptop. */
 .flow {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 20px 24px;
-}
-/* Reserves the space the SCALED frame occupies — a transform paints smaller
-   but still reserves its unscaled box, which otherwise leaves a page-length
-   gap below the phone. */
-/* The wrapper owns the visible window: it is sized to the scaled frame minus
-   whatever chrome was cropped, and it is what clips. */
-.flow__fit {
-  position: relative; flex: none; overflow: hidden;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(16,40,74,.10), 0 16px 40px rgba(16,40,74,.14);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
 }
 .flow__stage {
-  /* Absolute and explicitly 430 wide — the authored frame width, NOT the
-     wrapper's. As an ordinary block the stage took the wrapper's width (430 x
-     fit) and `overflow: hidden` then sliced that fraction off the frame inside
-     it: the logo, the headline and the consent line all lost their left edge. */
-  position: absolute; top: 0; left: 0;
-  width: var(--device-w);
+  width: 100%;
+  max-width: none;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--gray-050);
 }
-.flow__nav {
-  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 16px;
-  padding: 8px 12px; background: #fff; border-radius: 10px;
-  box-shadow: 0 6px 24px rgba(16,40,74,.18); font-size: 13px; z-index: 60;
+.flow__stage > * {
+  flex: 1 1 auto;
+  width: 100%;
 }
-.flow__nav button { padding: 6px 12px; border-radius: 6px; background: #f2f5f9; color: #10284a; font-weight: 500; }
-.flow__nav button:disabled { opacity: .4; cursor: default; }
-.flow__label { color: #55637a; }
-.flow__label code { color: #8b97ab; }
 
-/* Demo view extras */
-.flow__label { display: flex; flex-direction: column; gap: 2px; min-width: 260px; text-align: center; }
-.flow__label b { color: #10284a; font-weight: 600; }
+.flow__nav {
+  position: fixed; bottom: var(--space-lg); left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: var(--space-lg);
+  padding: var(--space-sm) var(--space-md); background: #fff; border-radius: 10px;
+  box-shadow: 0 6px 24px rgba(16,40,74,.18); font-size: 13px; z-index: 60;
+  max-width: calc(100% - var(--gutter) * 2);
+}
+.flow__nav button { padding: 6px 12px; border-radius: 6px; background: #f2f5f9; color: var(--brand-navy); font-weight: 500; }
+.flow__nav button:disabled { opacity: .4; cursor: default; }
+.flow__label {
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 0; text-align: center; color: #55637a; flex: 1 1 auto;
+}
+.flow__label b { color: var(--brand-navy); font-weight: 600; }
 .flow__sub { font-size: 11px; color: #8b97ab; }
 .flow__progress {
   position: fixed; left: 0; right: 0; bottom: 0; height: 3px;
   background: rgba(16,40,74,.10); z-index: 61;
 }
-.flow__progress span { display: block; height: 100%; background: #0050aa; transition: width .3s ease; }
+.flow__progress span { display: block; height: 100%; background: var(--primary); transition: width .3s ease; }
 
+@media (min-width: 768px) {
+  .app { background: var(--gray-050); }
+}
 
-/* ============================================================
-   RESPONSIVE SHELL
-   ------------------------------------------------------------
-   The frame itself is scaled in JS (see useFit in App.jsx) — it
-   cannot reflow without breaking the 1:1 Figma mapping. What is
-   left is the harness around it: the title bar and the step nav
-   were laid out for a desktop window and were the parts that
-   actually broke on a phone.
-   ============================================================ */
-
-/* Tablet and below: the title bar stacks, and the nav stops
-   assuming there is room for a 260px label between two buttons. */
 @media (max-width: 900px) {
-  .flow { padding: 20px 12px; }
-  .canvas { gap: 28px 20px; padding: 24px 12px; }
-
-  .app__bar { padding: 10px 14px; gap: 12px; }
-  .app__title { font-size: 13px; min-width: 0; }
-  .app__meta { font-size: 11px; }
+  .app__bar { padding: 10px 14px; }
+  .app__title { font-size: 13px; }
   .app__tab { padding: 5px 11px; font-size: 12px; }
 
   .flow__nav {
-    left: 12px; right: 12px; bottom: 12px;
+    left: var(--gutter); right: var(--gutter); bottom: var(--space-md);
     transform: none;
     justify-content: center; gap: 10px;
   }
-  .flow__label { min-width: 0; flex: 1 1 auto; }
   .flow__label b {
     display: block;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 }
 
-/* Phone: the meta line is the first thing worth losing, and the
-   nav shrinks to Back / label / Skip / reset with no padding to
-   spare. */
 @media (max-width: 560px) {
-  .flow { padding: 12px 8px; }
   .app__meta { display: none; }
-  .app__bar { padding: 8px 12px; }
-  .app__title { font-size: 12px; }
-
+  .app__bar { padding: var(--space-sm) var(--gutter); }
   .flow__nav { gap: 6px; padding: 6px 8px; font-size: 12px; }
   .flow__nav button { padding: 6px 8px; font-size: 12px; }
   .flow__sub { display: none; }
 }
 
-/* Short landscape (a phone turned sideways, or a small window):
-   the fixed nav would otherwise eat most of the viewport. */
 @media (max-height: 520px) {
-  .app { padding-bottom: 64px; }
-  .flow { padding: 8px; }
+  .app:has(.flow__nav) { padding-bottom: 4rem; }
   .flow__nav { bottom: 8px; padding: 4px 8px; }
   .flow__sub { display: none; }
 }
 
-/* No harness header: the frame gets that space back and sits centred on the
-   page, which is what a real application on a phone looks like. */
-.app--bare .flow { padding-top: 16px; }
-@media (max-width: 900px) { .app--bare .flow { padding-top: 8px; } }
-
-
-/* ============================================================
-   DEVICE — the phone the journey is shown inside.
-   ------------------------------------------------------------
-   On a real phone there is no bezel: the device IS the device,
-   and the frame's own drawn status bar and address bar are
-   cropped so they do not duplicate the ones the handset already
-   has. Anywhere else — iPad, laptop — the drawn chrome stays and
-   this wraps it, so what reads as a stray browser bar floating on
-   a desktop instead reads as a phone being held up.
-   ============================================================ */
-.device {
-  position: relative;
-  background: #0a0a0c;
-  box-shadow:
-    0 0 0 1px #3a3a40,
-    inset 0 0 0 1px rgba(255, 255, 255, .10),
-    0 24px 60px rgba(16, 40, 74, .30),
-    0 4px 12px rgba(16, 40, 74, .16);
-}
-.device__screen { position: relative; overflow: hidden; line-height: 0; }
-/* The dynamic island sits over the frame's own status bar, between its clock
-   and its signal icons — which is exactly where a phone puts it. */
-.device__island {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #0a0a0c;
-  pointer-events: none;
-  z-index: 6;
-}
-
-
-/* ============================================================
-   ASSISTANT — the help control that starts the voice agent.
-   ------------------------------------------------------------
-   It sits on the page, not inside the phone frame: it is the
-   lender's assistance offer, not part of the application being
-   filled in, and putting it inside would scale with the frame
-   and end up a 12px dot on a laptop.
-   ============================================================ */
 .assist {
-  position: fixed; right: 20px; bottom: 88px; z-index: 70;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  position: fixed; right: var(--space-lg); bottom: 5.5rem; z-index: 70;
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-sm);
 }
 .assist__btn {
-  width: 56px; height: 56px; border-radius: 50%;
+  width: 3.5rem; height: 3.5rem; border-radius: 50%;
   display: grid; place-items: center;
   background: var(--primary, #0050aa); color: #fff;
   box-shadow: 0 6px 20px rgba(0, 80, 170, .38), 0 1px 2px rgba(16, 40, 74, .2);
@@ -193,9 +126,8 @@
 .assist__btn:hover { transform: translateY(-1px); }
 .assist__btn.is-busy { background: #6b7f9c; cursor: progress; }
 .assist__btn.is-live { background: #1faa62; }
-/* A quiet ring while connecting, so a slow mic prompt still looks alive. */
 .assist__btn.is-busy::after {
-  content: ""; position: absolute; width: 56px; height: 56px;
+  content: ""; position: absolute; width: 3.5rem; height: 3.5rem;
   border-radius: 50%; border: 2px solid rgba(0, 80, 170, .5);
   animation: assist-pulse 1.4s ease-out infinite;
 }
@@ -203,7 +135,6 @@
   0% { transform: scale(1); opacity: .7; }
   100% { transform: scale(1.5); opacity: 0; }
 }
-/* Three bars that move while the assistant is on the call. */
 .assist__bars { display: flex; align-items: flex-end; gap: 3px; height: 20px; }
 .assist__bars i {
   width: 3px; background: #fff; border-radius: 2px;
@@ -214,28 +145,12 @@
 .assist__bars i:nth-child(3) { height: 12px; animation-delay: .3s; }
 @keyframes assist-bar { 0%, 100% { transform: scaleY(.5); } 50% { transform: scaleY(1); } }
 .assist__error {
-  max-width: 230px; margin: 0; padding: 8px 10px;
-  background: #fff; border-radius: 8px; font-size: 12px; line-height: 16px;
+  max-width: 14.375rem; margin: 0; padding: var(--space-sm) 10px;
+  background: #fff; border-radius: 8px; font-size: var(--text-xs); line-height: 16px;
   color: #8a2b2b; box-shadow: 0 6px 20px rgba(16, 40, 74, .18);
 }
 @media (max-width: 639px) {
-  /* Full-bleed page: the control sits in the corner rather than above a step
-     nav that no longer exists. */
-  .assist { right: 14px; bottom: 18px; }
-  .assist__btn { width: 52px; height: 52px; }
+  .assist { right: var(--gutter); bottom: var(--space-lg); }
 }
 
-
-/* A phone shows the journey full-bleed: no rounded card, no drop shadow, no
-   gutter. Those belong to a frame being displayed ON something; here the phone
-   IS the frame, and a card floating in a grey margin is the tell that it is a
-   mockup rather than the application itself. */
-@media (max-width: 639px) {
-  .app { background: var(--gray-050, #fafafa); padding-bottom: 0; }
-  .flow { padding: 0; }
-  .flow__fit { border-radius: 0; box-shadow: none; }
-}
-
-/* ?chrome=1 puts the step nav back for authoring; it floats, so it needs its
-   own clearance rather than a permanent reservation on every page. */
-.app:has(.flow__nav) { padding-bottom: 88px; }
+.app:has(.flow__nav) { padding-bottom: 5.5rem; }

@@ -2,7 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 
 import { NumberOtp, OtpSheet } from "../screens/auth.jsx";
 import { EnterPan, EnterAadhaar } from "../screens/kyc.jsx";
-import { DetailsScreen } from "../screens/details.jsx";
+import { DetailsScreen, currentKey } from "../screens/details.jsx";
 import { OfferScreen, OfferTopUp, ExistingLoanSheet } from "../screens/offer.jsx";
 import {
   ProcessingScreen,
@@ -16,11 +16,8 @@ import { Congratulations } from "../screens/outcome.jsx";
 import { Scrim } from "../components/index.jsx";
 import { CameraProvider, useCamera } from "./camera.jsx";
 import {
-  applicant,
-  depositFields as D,
   details as detailsData,
   loaders,
-  nsdlChrome as N,
 } from "../data/journey.js";
 
 /* ============================================================
@@ -44,8 +41,8 @@ import {
 
 function sheetOver(base, sheet) {
   return (
-    <div className="screen" style={{ height: 932 }}>
-      <div style={{ position: "absolute", inset: 0 }}>{base}</div>
+    <div className="sheet-host">
+      {base}
       <Scrim />
       {sheet}
     </div>
@@ -56,13 +53,15 @@ function sheetOver(base, sheet) {
 
 function LiveMobile({ go }) {
   const [v, setV] = useState("");
+  const [agreed, setAgreed] = useState(false);
   return (
     <NumberOtp
       value={v}
       onChange={setV}
-      onFill={() => setV(applicant.mobileEntry)}
+      consented={agreed}
+      onConsent={() => setAgreed((a) => !a)}
       onNext={go}
-      hint={v ? "cta" : "field"}
+      hint={!v ? "field" : !agreed ? "consent" : "cta"}
     />
   );
 }
@@ -75,7 +74,6 @@ function LiveOtp({ go, base, aadhaar = false }) {
       aadhaar={aadhaar}
       value={v}
       onChange={setV}
-      onFill={() => setV(applicant.otp)}
       onNext={go}
       hint={v ? "cta" : "field"}
     />
@@ -88,7 +86,6 @@ function LivePan({ go }) {
     <EnterPan
       value={v}
       onChange={setV}
-      onFill={() => setV(applicant.pan)}
       onNext={go}
       hint={v ? "cta" : "field"}
     />
@@ -101,31 +98,43 @@ function LiveAadhaar({ go }) {
     <EnterAadhaar
       value={v}
       onChange={setV}
-      onFill={() => setV(applicant.aadhaarFull)}
       onNext={go}
       hint={v ? "cta" : "field"}
     />
   );
 }
 
-function LiveAddress({ go }) {
+function LiveDetails({ jump }) {
   const [vals, setVals] = useState({});
-  const any = detailsData.form.some((f) => vals[f.label]);
+  const [different, setDifferent] = useState(false);
+  const profileOk =
+    detailsData.identity.every((f) => vals[f.key]) &&
+    detailsData.address.every((f) => vals[f.key]);
+  const extraOk =
+    !different || detailsData.address.every((f) => vals[currentKey(f.key)]);
+  const ready = profileOk && extraOk;
+
+  const copyAddress = () => {
+    setVals((p) => {
+      const next = { ...p };
+      for (const f of detailsData.address) {
+        next[currentKey(f.key)] = p[f.key] || "";
+      }
+      return next;
+    });
+  };
+
   return (
     <DetailsScreen
-      address
+      address={different}
       values={vals}
       onChangeField={(k, v) => setVals((p) => ({ ...p, [k]: v }))}
-      /* fills the blanks and leaves anything already typed alone */
-      onFill={() =>
-        setVals((p) =>
-          Object.fromEntries(
-            detailsData.form.map((f) => [f.label, p[f.label] || f.value])
-          )
-        )
-      }
-      onNext={go}
-      hint={any ? "cta" : "field"}
+      onToggle={() => {
+        if (!different) copyAddress();
+        setDifferent((on) => !on);
+      }}
+      onNext={() => jump(different ? "6031:16600" : "6031:15454")}
+      hint={ready ? "cta" : "field"}
     />
   );
 }
@@ -136,13 +145,6 @@ function LiveDeposit({ go }) {
     <DepositAccount
       values={vals}
       onChangeField={(k, v) => setVals((p) => ({ ...p, [k]: v }))}
-      onFill={() =>
-        setVals((p) => ({
-          ifsc: p.ifsc || D.ifsc.value,
-          account: p.account || D.confirm.value,
-          confirm: p.confirm || D.confirm.value,
-        }))
-      }
       onNext={go}
       hint={vals.ifsc ? "cta" : "field"}
     />
@@ -207,7 +209,6 @@ function LiveNsdl({ go, page }) {
       page={page}
       value={v}
       onChange={setV}
-      onFill={() => setV(page === "otp" ? N.otp : applicant.aadhaarFull)}
       onAction={go}
       hint={v ? "cta" : "field"}
     />
@@ -249,7 +250,7 @@ export const SCRIPT = [
   },
   {
     id: "6031:16587",
-    label: "Fetching KYC…",
+    label: "Processing…",
     wait: 1800,
     render: () => <ProcessingScreen {...loaders.processingDots} />,
   },
@@ -257,19 +258,13 @@ export const SCRIPT = [
   /* --- details + address ------------------------------------- */
   {
     id: "6031:16558",
-    label: "Details fetched — toggle a different address, or tap Next",
-    render: (go, jump) => (
-      <DetailsScreen
-        onToggle={go}
-        onNext={() => jump("6031:15454")}
-        hint="toggle"
-      />
-    ),
+    label: "Enter your details, or add a different current address",
+    render: (go, jump) => <LiveDetails jump={jump} />,
   },
   {
     id: "6031:16775",
     label: "Fill in your current address, then Save and Next",
-    render: (go) => <LiveAddress go={go} />,
+    render: (go, jump) => <LiveDetails jump={jump} />,
   },
   {
     id: "6031:16600",
