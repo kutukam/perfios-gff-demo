@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import "./styles/base.css";
 import "./styles/components.css";
 import "./styles/app.css";
@@ -28,6 +28,77 @@ import {
 import { Scrim } from "./components/index.jsx";
 import { loaders } from "./data/journey.js";
 import { useDemo } from "./demo/flow.jsx";
+
+/* ============================================================
+   FIT — one phone frame, any screen it is shown on.
+   ------------------------------------------------------------
+   Every frame is authored at exactly 430 x (its own height) and
+   its children are absolutely positioned to Figma's coordinates,
+   so the layout cannot reflow without giving up the fidelity the
+   whole reimplementation exists for. It scales instead: the frame
+   keeps its geometry and the browser draws it larger or smaller
+   so the WHOLE phone is visible, on a 360px handset and on an
+   iPad alike.
+
+   `zoom` rather than `transform: scale` because zoom scales the
+   layout box too — a transformed frame keeps reserving its
+   unscaled height and leaves a page-length gap under itself.
+   ============================================================ */
+const FRAME_W = 430;
+
+function useFit(stageRef) {
+  const [fit, setFit] = useState(1);
+
+  const measure = useCallback(() => {
+    const stage = stageRef.current;
+    const frame = stage?.querySelector(".screen");
+    if (!stage || !frame) return;
+    // offsetHeight is the UNZOOMED box, which is what we scale from.
+    const frameH = frame.offsetHeight || 932;
+    const availW = (stage.parentElement?.clientWidth ?? window.innerWidth) - 16;
+    /* Measure the harness rather than reserving a guess for it: the title bar
+       and the step nav both shrink on small screens, and a fixed allowance
+       left the frame needlessly small in landscape. */
+    const bar = document.querySelector(".app__bar")?.offsetHeight ?? 56;
+    const nav = document.querySelector(".flow__nav")?.offsetHeight ?? 56;
+    /* 76 = the stage's own top padding plus the gap the floating nav sits in.
+       Without it the frame ended 19px under the nav bar. */
+    const availH = window.innerHeight - bar - nav - 76;
+
+    /* On a phone, fill the width and let the page scroll — that is what the
+       real journey does, and a frame shrunk to fit the height would be a
+       postage stamp inside its own device. On a tablet or a laptop, where the
+       demo is being shown TO someone, fit the whole phone on screen instead. */
+    const phone = window.innerWidth < 640;
+    const fitW = availW / FRAME_W;
+    const wanted = phone ? fitW : Math.min(fitW, availH / frameH);
+
+    // Never below a legible floor, and never so large it stops reading as a phone.
+    setFit(Math.max(0.4, Math.min(wanted, 1.6)));
+  }, [stageRef]);
+
+  useLayoutEffect(measure);
+  useEffect(() => {
+    window.addEventListener("resize", measure);
+    window.addEventListener("orientationchange", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("orientationchange", measure);
+    };
+  }, [measure]);
+
+  return fit;
+}
+
+function Stage({ children }) {
+  const ref = useRef(null);
+  const fit = useFit(ref);
+  return (
+    <div className="flow__stage" ref={ref} style={{ zoom: fit }}>
+      {children}
+    </div>
+  );
+}
 
 /* A sheet renders over the screen it belongs to, matching how the
    frames are stacked on the Figma canvas. */
@@ -123,7 +194,7 @@ function DemoView() {
   const { i, step, view, go, jump, reset, total } = useDemo();
   return (
     <div className="flow">
-      <div className="flow__stage">{view}</div>
+      <Stage>{view}</Stage>
       <div className="flow__nav" data-cobrowse-ignore>
         <button onClick={() => go(-1)} disabled={i === 0}>
           ‹ Back
@@ -195,7 +266,7 @@ export default function App() {
         </div>
       ) : (
         <div className="flow">
-          <div className="flow__stage">{current.el}</div>
+          <Stage>{current.el}</Stage>
           <div className="flow__nav" data-cobrowse-ignore>
             <button onClick={() => setIndex((i) => Math.max(0, i - 1))} disabled={index === 0}>
               ‹ Prev

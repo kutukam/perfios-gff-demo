@@ -52,3 +52,61 @@
   background: rgba(16,40,74,.10); z-index: 61;
 }
 .flow__progress span { display: block; height: 100%; background: #0050aa; transition: width .3s ease; }
+
+
+/* ============================================================
+   RESPONSIVE SHELL
+   ------------------------------------------------------------
+   The frame itself is scaled in JS (see useFit in App.jsx) — it
+   cannot reflow without breaking the 1:1 Figma mapping. What is
+   left is the harness around it: the title bar and the step nav
+   were laid out for a desktop window and were the parts that
+   actually broke on a phone.
+   ============================================================ */
+
+/* Tablet and below: the title bar stacks, and the nav stops
+   assuming there is room for a 260px label between two buttons. */
+@media (max-width: 900px) {
+  .app { padding-bottom: 96px; }
+  .flow { padding: 20px 12px; }
+  .canvas { gap: 28px 20px; padding: 24px 12px; }
+
+  .app__bar { padding: 10px 14px; gap: 12px; }
+  .app__title { font-size: 13px; min-width: 0; }
+  .app__meta { font-size: 11px; }
+  .app__tab { padding: 5px 11px; font-size: 12px; }
+
+  .flow__nav {
+    left: 12px; right: 12px; bottom: 12px;
+    transform: none;
+    justify-content: center; gap: 10px;
+  }
+  .flow__label { min-width: 0; flex: 1 1 auto; }
+  .flow__label b {
+    display: block;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+}
+
+/* Phone: the meta line is the first thing worth losing, and the
+   nav shrinks to Back / label / Skip / reset with no padding to
+   spare. */
+@media (max-width: 560px) {
+  .flow { padding: 12px 8px; }
+  .app__meta { display: none; }
+  .app__bar { padding: 8px 12px; }
+  .app__title { font-size: 12px; }
+
+  .flow__nav { gap: 6px; padding: 6px 8px; font-size: 12px; }
+  .flow__nav button { padding: 6px 8px; font-size: 12px; }
+  .flow__sub { display: none; }
+}
+
+/* Short landscape (a phone turned sideways, or a small window):
+   the fixed nav would otherwise eat most of the viewport. */
+@media (max-height: 520px) {
+  .app { padding-bottom: 64px; }
+  .flow { padding: 8px; }
+  .flow__nav { bottom: 8px; padding: 4px 8px; }
+  .flow__sub { display: none; }
+}
