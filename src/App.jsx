@@ -81,12 +81,18 @@ function useFit(fitRef) {
     if (!wrap || !frame) return;
     // offsetHeight is the UNTRANSFORMED box, which is what we scale from.
     const frameH = frame.offsetHeight || 932;
-    /* Measure the OUTER container, never the wrapper's immediate parent: with
-       the bezel that parent is itself sized from this scale, so available width
-       shrank with the scale that shrank it and everything collapsed to the 0.4
-       floor. `.flow` is the one box in this chain that no scale feeds. */
-    const host = wrap.closest(".flow") ?? wrap.parentElement;
-    const availW = (host?.clientWidth ?? window.innerWidth) - 16;
+    /* Measure the VIEWPORT, not a container.
+     *
+     * Two ways this went wrong. Measuring the wrapper's own parent measured the
+     * box this hook sizes, so width shrank with the scale that shrank it and
+     * everything collapsed to the floor. Measuring the container instead put the
+     * page on the scrollbar threshold: fits, no scrollbar, wider, scale up,
+     * no longer fits, scrollbar, narrower, scale down — React gave up with
+     * "Maximum update depth exceeded" and rendered nothing at all.
+     *
+     * documentElement.clientWidth is the one number in this chain that no scale
+     * and no scrollbar feeds back into. */
+    const availW = document.documentElement.clientWidth - 32;
     /* Measure the harness rather than reserving a guess for it: the title bar
        and the step nav both shrink on small screens, and a fixed allowance
        left the frame needlessly small in landscape. */
@@ -116,22 +122,40 @@ function useFit(fitRef) {
 
     // Never below a legible floor, and never so large it stops reading as a phone.
     const fit = Math.max(0.4, Math.min(wanted, 1.6));
+    /* Dead-band. Sub-pixel churn is invisible and re-rendering on it is how a
+       measure-then-resize loop stays alive; only a change worth seeing counts. */
     setBox((b) =>
-      b.fit === fit && b.h === shown && b.crop === crop && b.bezel === (bezel > 0)
+      Math.abs(b.fit - fit) < 0.005 &&
+      b.h === shown &&
+      b.crop === crop &&
+      b.bezel === (bezel > 0)
         ? b
         : { fit, h: shown, crop, bezel: bezel > 0 }
     );
   }, [fitRef]);
 
-  useLayoutEffect(measure);
-  useEffect(() => {
+  /* Measure on mount, on a real resize, and when the FRAME changes size —
+     never simply "after every render". Re-measuring on every render means every
+     measurement can trigger the next one, and one sub-pixel disagreement is
+     then an infinite loop: React bailed out with "Maximum update depth
+     exceeded" and rendered a blank page. A ResizeObserver on the frame catches
+     the only thing that actually varies — a taller screen in the journey. */
+  useLayoutEffect(() => {
+    measure();
+    const frame = fitRef.current?.querySelector(".screen");
+    const ro =
+      typeof ResizeObserver !== "undefined" && frame
+        ? new ResizeObserver(() => measure())
+        : null;
+    if (frame && ro) ro.observe(frame);
     window.addEventListener("resize", measure);
     window.addEventListener("orientationchange", measure);
     return () => {
+      ro?.disconnect();
       window.removeEventListener("resize", measure);
       window.removeEventListener("orientationchange", measure);
     };
-  }, [measure]);
+  }, [measure, fitRef]);
 
   return box;
 }
@@ -161,7 +185,7 @@ function Stage({ children }) {
            already exactly the visible size. */
         style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
       >
-        <div style={{ marginTop: -crop }}>{children}</div>
+        <div style={{ marginTop: -(crop || 0) }}>{children}</div>
       </div>
     </div>
   );
@@ -286,24 +310,26 @@ function DemoView() {
   return (
     <div className="flow">
       <Stage>{view}</Stage>
-      <div className="flow__nav" data-cobrowse-ignore>
-        <button onClick={() => go(-1)} disabled={i === 0}>
-          ‹ Back
-        </button>
-        <span className="flow__label">
-          <b>{step.label}</b>
-          <span className="flow__sub">
-            {i + 1}/{total} · <code>{step.id}</code>
+      {/* The step nav is a development harness — Back / Skip / the frame id —
+          and on a demo screen it reads as scaffolding around a real product.
+          ?chrome=1 brings it back for authoring. */}
+      {chromeForced() && (
+        <div className="flow__nav" data-cobrowse-ignore>
+          <button onClick={() => go(-1)} disabled={i === 0}>
+            ‹ Back
+          </button>
+          <span className="flow__label">
+            <b>{step.label}</b>
+            <span className="flow__sub">
+              {i + 1}/{total} · <code>{step.id}</code>
+            </span>
           </span>
-        </span>
-        <button onClick={() => go(1)} disabled={i === total - 1}>
-          Skip ›
-        </button>
-        <button onClick={reset}>↺</button>
-      </div>
-      <div className="flow__progress">
-        <span style={{ width: `${((i + 1) / total) * 100}%` }} />
-      </div>
+          <button onClick={() => go(1)} disabled={i === total - 1}>
+            Skip ›
+          </button>
+          <button onClick={reset}>↺</button>
+        </div>
+      )}
       <AssistantButton />
     </div>
   );

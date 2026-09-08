@@ -1,6 +1,7 @@
 import { useRef } from "react";
 
 import { ACME_LOGO, PERFIOS_LOGO, MARK_RUPEE } from "../assets/figmaAssets.js";
+import { ICON_PATHS } from "./icons.jsx";
 
 /* ============================================================
    Icon — Material Symbols Rounded. `light` maps to the Light
@@ -8,17 +9,21 @@ import { ACME_LOGO, PERFIOS_LOGO, MARK_RUPEE } from "../assets/figmaAssets.js";
    to FILL 1 (the success check_circle).
    ============================================================ */
 export function Icon({ name, light, filled, className = "", style, onClick }) {
-  const cls = [
-    "msr",
-    light ? "msr--light" : "",
-    filled ? "msr--filled" : "",
-    className,
-  ]
+  const cls = ["msr", light ? "msr--light" : "", filled ? "msr--filled" : "", className]
     .filter(Boolean)
     .join(" ");
+  const path = ICON_PATHS[name];
   return (
     <span className={cls} style={style} onClick={onClick} aria-hidden="true">
-      {name}
+      {path ? (
+        /* The glyph is drawn, never typed: a webfont that has not arrived
+           renders its own ligature TEXT, and "check_box_outline_blank" in
+           place of a checkbox is what broke this page on a phone. `1em`
+           keeps every existing font-size rule working unchanged. */
+        <svg viewBox="0 0 24 24" width="1em" height="1em" fill="currentColor" focusable="false">
+          <path d={path} />
+        </svg>
+      ) : null}
     </span>
   );
 }

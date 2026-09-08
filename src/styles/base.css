@@ -3,7 +3,6 @@
 @import "@fontsource/inter/600.css";
 @import "@fontsource/inter/700.css";
 @import "@fontsource/roboto/400.css";
-@import "material-symbols/rounded.css";
 @import "./tokens.css";
 
 /* ============================================================
@@ -55,31 +54,23 @@ button {
    Material Symbols Rounded — the file uses Light (300) and
    Regular (400), with FILL 0 or 1 per instance.
    ============================================================ */
+/* Icons are inline SVG now (see components/icons.jsx) — a 4.6MB webfont that
+   had not loaded rendered its own ligature text on a phone. The box keeps its
+   font-size-driven sizing so every existing rule still applies; the svg inside
+   is 1em square. The weight/FILL variants are geometry choices in the paths
+   themselves, so the old variation-settings hooks are kept as no-ops rather
+   than removed, to avoid touching two dozen call sites. */
 .msr {
-  font-family: var(--font-icon);
-  font-weight: 400;
-  font-style: normal;
-  line-height: 24px;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  -webkit-font-feature-settings: "liga";
-  -webkit-font-smoothing: antialiased;
-  font-variation-settings: "FILL" 0, "GRAD" 0, "wght" 400, "opsz" 24;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex: none;
 }
-.msr--light {
-  font-weight: 300;
-  font-variation-settings: "FILL" 0, "GRAD" 0, "wght" 300, "opsz" 24;
-}
-.msr--filled {
-  font-variation-settings: "FILL" 1, "GRAD" 0, "wght" 400, "opsz" 24;
-}
-.msr--light.msr--filled {
-  font-variation-settings: "FILL" 1, "GRAD" 0, "wght" 300, "opsz" 24;
-}
+.msr svg { display: block; }
+.msr--light,
+.msr--filled,
+.msr--light.msr--filled { /* variant hooks; geometry lives in the paths */ }
 
 /* ============================================================
    Screen scaffold — every Figma frame is 430px wide. Screens are
