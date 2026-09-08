@@ -32,6 +32,20 @@ const AGENT = {
   version: 3,
 };
 
+/* Committing on the dashboard mints a NEW version, and a pin left behind keeps
+   serving the old one — the tools you just fixed sit in v4 while the page still
+   calls v3, and it fails in exactly the way it did before, which reads as "the
+   fix did nothing". `?v=4` overrides the pin so a commit can be tested without
+   a redeploy; the constant above is still what a plain visit gets. */
+function agentVersion() {
+  try {
+    const v = Number(new URLSearchParams(window.location.search).get("v"));
+    return Number.isInteger(v) && v > 0 ? v : AGENT.version;
+  } catch {
+    return AGENT.version;
+  }
+}
+
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /* Marks the page as being guided. It does NOT draw anything: the ring is
@@ -101,7 +115,7 @@ export function AssistantButton() {
           org_id: AGENT.orgId,
           workspace_id: AGENT.workspaceId,
           app_id: AGENT.appId,
-          version: AGENT.version,
+          version: agentVersion(),
           user_identifier: s.session_id,
           user_identifier_type: "custom",
           interaction_type: InteractionType.CALL,
