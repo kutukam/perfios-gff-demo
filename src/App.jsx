@@ -118,10 +118,16 @@ function useFit(fitRef) {
     const crop = phone ? CHROME_H : 0;
     const bezel = phone ? 0 : BEZEL;
     const shown = frameH - crop;
-    const wanted = Math.min(
-      (availW - bezel) / FRAME_W,
-      (availH - bezel) / shown
-    );
+    /* On a phone, fit the WIDTH and let the page be as tall as it is.
+       Fitting the height too is what left grey down both sides: a shorter
+       viewport (a mobile browser's toolbars eat ~90px) makes the height the
+       binding constraint, so the frame shrinks away from the edges.
+       Width-fitting overflows by a few dozen pixels at most — a page you
+       scroll, exactly like the real journey. Anywhere else the whole phone
+       still has to be visible at once, which is the point of the bezel. */
+    const wanted = phone
+      ? availW / FRAME_W
+      : Math.min((availW - bezel) / FRAME_W, (availH - bezel) / shown);
 
     // Never below a legible floor, and never so large it stops reading as a phone.
     const fit = Math.max(0.4, Math.min(wanted, 1.6));

@@ -1,5 +1,8 @@
 /* Shell chrome only — nothing here affects the fidelity of a frame. */
-.app { min-height: 100vh; background: #eef1f6; padding-bottom: 80px; }
+/* No bottom padding: it reserved room for the floating step nav, which is gone.
+   Left in, it made the page 102px taller than the viewport on a laptop — and a
+   page that scrolls is a page the highlight ring drifts on. */
+.app { min-height: 100vh; background: #eef1f6; }
 
 .app__bar {
   position: sticky; top: 0; z-index: 50;
@@ -27,7 +30,13 @@
 }
 .canvas__caption code { font-size: 11px; color: #8b97ab; }
 
-.flow { display: flex; flex-direction: column; align-items: center; padding: 40px 24px; }
+/* Centre the phone in whatever height is left, and keep the padding symmetric —
+   an asymmetric 40px top with none at the bottom is what still pushed the page
+   22px past the viewport on a laptop. */
+.flow {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px 24px;
+}
 /* Reserves the space the SCALED frame occupies — a transform paints smaller
    but still reserves its unscaled box, which otherwise leaves a page-length
    gap below the phone. */
@@ -81,7 +90,6 @@
 /* Tablet and below: the title bar stacks, and the nav stops
    assuming there is room for a 260px label between two buttons. */
 @media (max-width: 900px) {
-  .app { padding-bottom: 96px; }
   .flow { padding: 20px 12px; }
   .canvas { gap: 28px 20px; padding: 24px 12px; }
 
@@ -210,7 +218,24 @@
   background: #fff; border-radius: 8px; font-size: 12px; line-height: 16px;
   color: #8a2b2b; box-shadow: 0 6px 20px rgba(16, 40, 74, .18);
 }
-@media (max-width: 560px) {
-  .assist { right: 12px; bottom: 76px; }
-  .assist__btn { width: 50px; height: 50px; }
+@media (max-width: 639px) {
+  /* Full-bleed page: the control sits in the corner rather than above a step
+     nav that no longer exists. */
+  .assist { right: 14px; bottom: 18px; }
+  .assist__btn { width: 52px; height: 52px; }
 }
+
+
+/* A phone shows the journey full-bleed: no rounded card, no drop shadow, no
+   gutter. Those belong to a frame being displayed ON something; here the phone
+   IS the frame, and a card floating in a grey margin is the tell that it is a
+   mockup rather than the application itself. */
+@media (max-width: 639px) {
+  .app { background: var(--gray-050, #fafafa); padding-bottom: 0; }
+  .flow { padding: 0; }
+  .flow__fit { border-radius: 0; box-shadow: none; }
+}
+
+/* ?chrome=1 puts the step nav back for authoring; it floats, so it needs its
+   own clearance rather than a permanent reservation on every page. */
+.app:has(.flow__nav) { padding-bottom: 88px; }
