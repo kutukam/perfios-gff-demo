@@ -23,11 +23,10 @@ const ENDPOINT = import.meta.env.VITE_COBROWSE_ENDPOINT || "https://cobrowse-do.
 
 /* Start assistance, and not one moment sooner.
    ------------------------------------------------------------
-   On a link from the assistant (?cb=<code>) this runs at load: the customer was
-   sent here to be guided and expects it. Otherwise NOTHING happens until they
-   press the help button — a visitor who never asks for help is never asked for
-   consent, never publishes a page model, and never sees a control ring itself
-   unprompted.
+   NOTHING happens until the customer presses the help button — no session, no
+   consent prompt, no page model, no ring. An assistant's ?cb= link changes only
+   where the session comes from (the URL rather than a fresh mint), never when
+   assistance begins.
 
    `tenant` is not decoration. An unowned session refuses the tenant key this
    journey's assistant authenticates with, so it would be forbidden from reading
@@ -101,7 +100,10 @@ export function cobrowseCode() {
   }
 }
 
-if (cobrowseCode()) startAssistance().catch(() => {});
+/* Nothing starts on load, not even on an assistant's ?cb= link. Arriving on a link
+   still skips minting a session — startAssistance() binds to the one in the URL — but
+   the customer presses the microphone first either way, so a page never watches itself
+   being highlighted by something the person on it did not ask for. */
 
 /* Authoring aid, dev only: CoBrowse.__scanForTest() prints the labels the
    assistant would see for the screen currently rendered, which is what a
