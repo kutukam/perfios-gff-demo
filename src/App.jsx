@@ -92,15 +92,18 @@ function useFit(fitRef) {
      *
      * documentElement.clientWidth is the one number in this chain that no scale
      * and no scrollbar feeds back into. */
-    const availW = document.documentElement.clientWidth - 32;
-    /* Measure the harness rather than reserving a guess for it: the title bar
-       and the step nav both shrink on small screens, and a fixed allowance
-       left the frame needlessly small in landscape. */
-    const bar = document.querySelector(".app__bar")?.offsetHeight ?? 56;
-    const nav = document.querySelector(".flow__nav")?.offsetHeight ?? 56;
-    /* 76 = the stage's own top padding plus the gap the floating nav sits in.
-       Without it the frame ended 19px under the nav bar. */
-    const availH = window.innerHeight - bar - nav - 76;
+    const vw = document.documentElement.clientWidth;
+    /* A phone gets the full width: a real page on a phone runs edge to edge,
+       not as a card floating in a grey margin. */
+    const availW = vw < 640 ? vw : vw - 32;
+    /* Reserve only what is actually on the page. Both the title bar and the
+       step nav are gone from the demo view now, and still subtracting a 56px
+       fallback for each left the frame 188px shorter than the screen — a phone
+       showing the journey in the top three-quarters with grey underneath. */
+    const bar = document.querySelector(".app__bar")?.offsetHeight ?? 0;
+    const nav = document.querySelector(".flow__nav")?.offsetHeight ?? 0;
+    const gap = nav ? 76 : 16; // the floating nav needs room; nothing else does
+    const availH = window.innerHeight - bar - nav - gap;
 
     /* ALWAYS fit the whole frame, on a phone too.
        Filling the width and letting the page scroll read better, but the

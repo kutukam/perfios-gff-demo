@@ -793,8 +793,9 @@
 .nsdl__input.hint::after {
   content: none;
 }
-/* an input cannot carry ::after, so the ring is drawn as a shadow */
-.nsdl__input.hint {
+/* an input cannot carry ::after, so the ring is drawn as a shadow — gated on
+   the assistant being live for the same reason as .hint::after above */
+html.is-guided .nsdl__input.hint {
   border-radius: 6px;
   animation: nsdl-hint-pulse 1.5s ease-in-out infinite;
 }
@@ -823,7 +824,14 @@
 .hint {
   position: relative;
 }
+/* The ring only exists while the assistant is guiding. On a page nobody has
+   asked for help on it was pulsing at the first field on its own, which reads
+   as the page highlighting itself — and is the assistant's job, not the
+   page's. `is-guided` goes on <html> when the assistant connects. */
 .hint::after {
+  content: none;
+}
+html.is-guided .hint::after {
   content: "";
   position: absolute;
   inset: -5px;

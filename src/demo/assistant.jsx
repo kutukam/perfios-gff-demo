@@ -30,6 +30,14 @@ const AGENT = {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* The page's own guidance ring is the assistant's, so it appears when the
+   assistant does and goes when it goes — see .hint in components.css. */
+function setGuided(on) {
+  try {
+    document.documentElement.classList.toggle("is-guided", on);
+  } catch { /* nothing to do if the document is gone */ }
+}
+
 /** The co-browse code this page was opened with, so the agent can see the screen. */
 function cobrowseCode() {
   try {
@@ -48,6 +56,7 @@ export function AssistantButton() {
   const stop = useCallback(async () => {
     const agent = agentRef.current;
     agentRef.current = null;
+    setGuided(false);
     setState("idle");
     if (agent) {
       // Never let a stalled teardown freeze the button.
@@ -108,6 +117,7 @@ export function AssistantButton() {
       ]);
       const live = await agent.waitForConnect(8);
       if (!live) throw new Error("The assistant did not answer. Try again.");
+      setGuided(true);
       setState("live");
     } catch (e) {
       const raw = String(e?.message ?? e);
