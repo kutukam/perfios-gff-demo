@@ -396,7 +396,8 @@ export function ENach({ onSubmit, hint }) {
             paddingTop: 20,
           }}
         >
-          <span
+          <button
+            type="button"
             style={{
               background: "var(--gray-500)",
               color: "#fff",
@@ -406,14 +407,18 @@ export function ENach({ onSubmit, hint }) {
             }}
           >
             {E.cancel}
-          </span>
-          <span
+          </button>
+          <button
+            type="button"
             className={`${hint === "cta" ? "hint " : ""}${
               onSubmit ? "is-tappable" : ""
             }`}
             onClick={onSubmit}
-            /* the mandate page draws its buttons as spans; without a role the
-               co-browse page model cannot see this screen has a control at all */
+            /* The mandate page draws its buttons as spans. The role is what makes
+               the page model see a control here at all; the id is what gives it a
+               SELECTOR — without one the model reported the control with no `sel`
+               and the highlight ring had nothing to attach to. */
+            id="enach-submit"
             role="button"
             tabIndex={0}
             aria-label={E.submit}
@@ -426,7 +431,7 @@ export function ENach({ onSubmit, hint }) {
             }}
           >
             {E.submit}
-          </span>
+          </button>
         </div>
       </div>
 

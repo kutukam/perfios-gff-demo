@@ -53,13 +53,20 @@ import { useDemo } from "./demo/flow.jsx";
    is what `.flow__fit` below does.
    ============================================================ */
 const FRAME_W = 430;
+/* The frames draw a phone's OWN chrome — a status bar with a fake clock and a
+   browser address bar — because in Figma the frame is the phone. On a real
+   phone that lands directly under the device's actual status bar and URL bar:
+   two clocks, two address bars, and the illusion dies. Those bands are the top
+   66px of every frame, so on a real phone the frame is cropped by exactly that
+   much and every coordinate inside it stays where the design put it. */
+const CHROME_H = 66;
 
 /* `fitRef` is the WRAPPER, not the scaled frame. Measuring the frame's own
    parent would measure the box this hook sizes — available width would shrink
    with the scale that shrank it, and the whole thing collapsed to the 0.4
    floor on every screen. Measure the container the wrapper sits in. */
 function useFit(fitRef) {
-  const [box, setBox] = useState({ fit: 1, h: 932 });
+  const [box, setBox] = useState({ fit: 1, h: 932, crop: 0 });
 
   const measure = useCallback(() => {
     const wrap = fitRef.current;
@@ -82,12 +89,17 @@ function useFit(fitRef) {
        postage stamp inside its own device. On a tablet or a laptop, where the
        demo is being shown TO someone, fit the whole phone on screen instead. */
     const phone = window.innerWidth < 640;
+    // A real phone supplies its own status and address bars; drop the drawn ones.
+    const crop = phone ? CHROME_H : 0;
+    const shown = frameH - crop;
     const fitW = availW / FRAME_W;
-    const wanted = phone ? fitW : Math.min(fitW, availH / frameH);
+    const wanted = phone ? fitW : Math.min(fitW, availH / shown);
 
     // Never below a legible floor, and never so large it stops reading as a phone.
     const fit = Math.max(0.4, Math.min(wanted, 1.6));
-    setBox((b) => (b.fit === fit && b.h === frameH ? b : { fit, h: frameH }));
+    setBox((b) =>
+      b.fit === fit && b.h === shown && b.crop === crop ? b : { fit, h: shown, crop }
+    );
   }, [fitRef]);
 
   useLayoutEffect(measure);
@@ -105,10 +117,11 @@ function useFit(fitRef) {
 
 function Stage({ children }) {
   const ref = useRef(null);
-  const { fit, h } = useFit(ref);
+  const { fit, h, crop } = useFit(ref);
   return (
     /* The wrapper reserves what the scaled frame actually occupies; the frame
-       itself is scaled from its top-left so the two stay in register. */
+       itself is scaled from its top-left so the two stay in register. `crop`
+       lifts the frame so its own phone chrome sits above the visible area. */
     <div
       className="flow__fit"
       ref={ref}
@@ -116,9 +129,13 @@ function Stage({ children }) {
     >
       <div
         className="flow__stage"
-        style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
+        style={{
+          transform: `scale(${fit})`,
+          transformOrigin: "top left",
+          height: h,
+        }}
       >
-        {children}
+        <div style={{ marginTop: -crop }}>{children}</div>
       </div>
     </div>
   );

@@ -110,16 +110,16 @@ export function NsdlEsign({
       )}
 
       {onAction && (
-        <div
+        <button
+          type="button"
           className={`is-tappable${hint === "cta" ? " hint" : ""}`}
           onClick={live && !value ? undefined : onAction}
-          style={{ ...N.pill, position: "absolute" }}
-          role="button"
-          tabIndex={0}
+          style={{ ...N.pill, position: "absolute", background: "transparent" }}
+          id="nsdl-pill"
           /* the pill is pixels in the export, so this is the only name the
              co-browse page model can see for it */
           aria-label={page === "otp" ? "Verify OTP" : "Send OTP"}
-        />
+        ></button>
       )}
     </NsdlFrame>
   );
@@ -195,13 +195,13 @@ export function NsdlSuccess({ variant = "lottie", onBack, hint }) {
           {N.success}
         </p>
 
-        <div
+        <button
+          type="button"
           className={`${hint === "cta" ? "hint " : ""}${
             onBack ? "is-tappable" : ""
           }`}
           onClick={onBack}
-          role="button"
-          tabIndex={0}
+          id="nsdl-go-back"
           aria-label={N.goBack}
           style={{
             position: "absolute",
@@ -219,7 +219,7 @@ export function NsdlSuccess({ variant = "lottie", onBack, hint }) {
           }}
         >
           {N.goBack}
-        </div>
+        </button>
       </div>
     </NsdlFrame>
   );
