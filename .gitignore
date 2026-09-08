@@ -1,5 +1,7 @@
 node_modules/
 dist/
+# ...except the vendored SDK, which IS source here until the fix is on npm.
+!vendor/creditnirvana-cobrowse/dist/
 .DS_Store
 *.log
 .vite/
