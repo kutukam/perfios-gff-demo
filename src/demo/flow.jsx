@@ -14,6 +14,7 @@ import { DepositAccount, ENach, ENachLoading } from "../screens/mandate.jsx";
 import { NsdlEsign, NsdlSuccess } from "../screens/esign.jsx";
 import { Congratulations } from "../screens/outcome.jsx";
 import { Scrim } from "../components/index.jsx";
+import { CameraProvider, useCamera } from "./camera.jsx";
 import {
   applicant,
   depositFields as D,
@@ -148,6 +149,53 @@ function LiveDeposit({ go }) {
   );
 }
 
+/* The liveness steps share one camera across four screens: it opens when the
+   customer reaches "Start", the feed runs while they read the digits, "Stop"
+   freezes a real frame, and the confirm screen shows that frame back. Retake
+   throws the capture away and reopens the feed. */
+function LiveLiveness({ go, stage, progress, cta }) {
+  const cam = useCamera();
+  useEffect(() => {
+    cam.start();
+  }, [cam]);
+  return (
+    <VideoLiveness
+      stage={stage}
+      progress={progress}
+      stream={cam.stream}
+      videoRef={cam.videoRef}
+      onStart={cta === "start" ? go : undefined}
+      onStop={
+        cta === "stop"
+          ? () => {
+              cam.snap();
+              go();
+            }
+          : undefined
+      }
+      hint={cta ? "cta" : undefined}
+    />
+  );
+}
+
+function LiveConfirmVideo({ go, jump }) {
+  const cam = useCamera();
+  return (
+    <ConfirmVideo
+      capture={cam.capture}
+      onConfirm={() => {
+        cam.stop(); // the liveness section is over — turn the camera off
+        go();
+      }}
+      onRetake={() => {
+        cam.reset();
+        jump("6031:15829");
+      }}
+      hint="cta"
+    />
+  );
+}
+
 /* The NSDL page is a raster: the VID/Aadhaar box and the Send OTP
    pill are both overlays. Filling the box and pressing the pill are
    two separate actions on one page — the pill does nothing while the
@@ -272,31 +320,25 @@ export const SCRIPT = [
   {
     id: "6031:15829",
     label: "Tap Start to record",
-    render: (go) => <VideoLiveness stage="start" onStart={go} hint="cta" />,
+    render: (go) => <LiveLiveness go={go} stage="start" cta="start" />,
   },
   {
     id: "6031:15881",
     label: "Read the digits aloud…",
     wait: 1400,
-    render: () => <VideoLiveness stage="reading" progress={0.15} />,
+    render: () => <LiveLiveness stage="reading" progress={0.15} />,
   },
   {
     id: "6031:15919",
     label: "Tap Stop when done",
     render: (go) => (
-      <VideoLiveness stage="reading" progress={0.85} onStop={go} hint="cta" />
+      <LiveLiveness go={go} stage="reading" progress={0.85} cta="stop" />
     ),
   },
   {
     id: "6031:15957",
     label: "Confirm the captured video",
-    render: (go, jump) => (
-      <ConfirmVideo
-        onConfirm={go}
-        onRetake={() => jump("6031:15829")}
-        hint="cta"
-      />
-    ),
+    render: (go, jump) => <LiveConfirmVideo go={go} jump={jump} />,
   },
   {
     id: "6031:15997",
@@ -423,7 +465,11 @@ export function useDemo() {
   /* keyed on the step, so a step's typed state is discarded when the
      journey moves on — and Back gives you an empty form again. */
   const view = useMemo(
-    () => <Fragment key={step.id}>{step.render(go, jump)}</Fragment>,
+    () => (
+      <CameraProvider key="camera">
+        <Fragment key={step.id}>{step.render(go, jump)}</Fragment>
+      </CameraProvider>
+    ),
     [step, go, jump]
   );
 

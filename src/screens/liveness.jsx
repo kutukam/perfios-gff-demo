@@ -5,6 +5,7 @@ import {
   LIVENESS_LOCATION_BLUR,
 } from "../assets/figmaAssets.js";
 import { livenessCopy as C } from "../data/journey.js";
+import { CameraView } from "../demo/camera.jsx";
 
 /* Shared white panel that sits over the camera feed. */
 function Panel({ height, children }) {
@@ -120,13 +121,24 @@ export function LocationAccess({ onAllow, onDeny, hint }) {
    Camera still fills 430x569 from y=122. Panel is 266 tall on the
    instruction screen, 276 once the digits appear.
    ============================================================ */
-export function VideoLiveness({ stage = "start", progress = 0, onStart, onStop, hint }) {
+export function VideoLiveness({
+  stage = "start",
+  progress = 0,
+  onStart,
+  onStop,
+  hint,
+  /* Demo view: the real camera. Frames and Canvas pass neither and keep the
+     design's own still, so the static frames are unchanged. */
+  stream,
+  videoRef,
+}) {
   const reading = stage !== "start";
   return (
     <div className="screen screen--white" style={{ height: 932 }}>
-      <img
-        src={LIVENESS_CAMERA}
-        alt=""
+      <CameraView
+        stream={stream}
+        videoRef={videoRef}
+        fallback={LIVENESS_CAMERA}
         style={{ position: "absolute", left: 0, top: 122, width: 430, height: 569 }}
       />
 
@@ -292,7 +304,7 @@ function StopButton({ progress, onClick, hint }) {
    Heading block at (55,154); the 320x440 still at (55,254) with a
    play affordance and scrubber; Retake / Confirm pair at the base.
    ============================================================ */
-export function ConfirmVideo({ onRetake, onConfirm, hint }) {
+export function ConfirmVideo({ onRetake, onConfirm, hint, capture }) {
   return (
     <div className="screen screen--white" style={{ height: 932 }}>
       <div style={{ position: "absolute", left: 55, top: 154, width: 320 }}>
@@ -332,8 +344,8 @@ export function ConfirmVideo({ onRetake, onConfirm, hint }) {
         }}
       >
         <img
-          src={LIVENESS_CAPTURE}
-          alt=""
+          src={capture || LIVENESS_CAPTURE}
+          alt={capture ? "The frame just captured from your camera" : ""}
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
         <div

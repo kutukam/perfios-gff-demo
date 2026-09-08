@@ -241,15 +241,40 @@ function DemoView() {
   );
 }
 
+/* The harness header is a development affordance, not part of the journey —
+   on a demo screen it reads as a browser someone forgot to close. It is hidden
+   in the Demo view, which is the one anybody is shown. Reach the other two with
+   ?view=frames / ?view=canvas (their own header is how you get back), or force
+   the switcher on anywhere with ?chrome=1. */
+function initialView() {
+  try {
+    const v = new URLSearchParams(window.location.search).get("view");
+    return v === "frames" || v === "canvas" ? v : "demo";
+  } catch {
+    return "demo";
+  }
+}
+
+function chromeForced() {
+  try {
+    return new URLSearchParams(window.location.search).get("chrome") === "1";
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
-  const [view, setView] = useState("demo");
+  const [view, setView] = useState(initialView);
   const [index, setIndex] = useState(0);
   const current = SCREENS[index];
 
+  const showBar = view !== "demo" || chromeForced();
+
   return (
-    <div className="app">
+    <div className={`app${showBar ? "" : " app--bare"}`}>
       {/* the view switcher and the step nav below are this harness, not the
           journey — data-cobrowse-ignore keeps them out of the page model */}
+      {showBar && (
       <header className="app__bar" data-cobrowse-ignore>
         <div className="app__title">
           PA/PQ &lt;&gt; Personal Loan Top Up
@@ -273,6 +298,7 @@ export default function App() {
           ))}
         </div>
       </header>
+      )}
 
       {view === "demo" ? (
         <DemoView />
