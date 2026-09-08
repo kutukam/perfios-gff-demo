@@ -40,20 +40,28 @@ import { useDemo } from "./demo/flow.jsx";
    so the WHOLE phone is visible, on a 360px handset and on an
    iPad alike.
 
-   `zoom` rather than `transform: scale` because zoom scales the
-   layout box too — a transformed frame keeps reserving its
-   unscaled height and leaves a page-length gap under itself.
+   It must be `transform: scale`, NOT `zoom`. Zoom is tidier —
+   it scales the layout box, so nothing has to reserve space by
+   hand — but it desynchronises the two coordinate systems the
+   co-browse overlay bridges: the SDK reads a target with
+   getBoundingClientRect (visual pixels) and places its ring in
+   document space using scrollY (layout pixels). Under zoom those
+   differ by scrollY x (1 - zoom), and the ring was measured
+   landing 130px below the field it was pointing at. A transform
+   leaves the viewport-to-document mapping alone, so the ring is
+   exact; the cost is reserving the scaled box ourselves, which
+   is what `.flow__fit` below does.
    ============================================================ */
 const FRAME_W = 430;
 
 function useFit(stageRef) {
-  const [fit, setFit] = useState(1);
+  const [box, setBox] = useState({ fit: 1, h: 932 });
 
   const measure = useCallback(() => {
     const stage = stageRef.current;
     const frame = stage?.querySelector(".screen");
     if (!stage || !frame) return;
-    // offsetHeight is the UNZOOMED box, which is what we scale from.
+    // offsetHeight is the UNTRANSFORMED box, which is what we scale from.
     const frameH = frame.offsetHeight || 932;
     const availW = (stage.parentElement?.clientWidth ?? window.innerWidth) - 16;
     /* Measure the harness rather than reserving a guess for it: the title bar
@@ -74,7 +82,8 @@ function useFit(stageRef) {
     const wanted = phone ? fitW : Math.min(fitW, availH / frameH);
 
     // Never below a legible floor, and never so large it stops reading as a phone.
-    setFit(Math.max(0.4, Math.min(wanted, 1.6)));
+    const fit = Math.max(0.4, Math.min(wanted, 1.6));
+    setBox((b) => (b.fit === fit && b.h === frameH ? b : { fit, h: frameH }));
   }, [stageRef]);
 
   useLayoutEffect(measure);
@@ -87,15 +96,23 @@ function useFit(stageRef) {
     };
   }, [measure]);
 
-  return fit;
+  return box;
 }
 
 function Stage({ children }) {
   const ref = useRef(null);
-  const fit = useFit(ref);
+  const { fit, h } = useFit(ref);
   return (
-    <div className="flow__stage" ref={ref} style={{ zoom: fit }}>
-      {children}
+    /* The wrapper reserves what the scaled frame actually occupies; the frame
+       itself is scaled from its top-left so the two stay in register. */
+    <div className="flow__fit" style={{ width: FRAME_W * fit, height: h * fit }}>
+      <div
+        className="flow__stage"
+        ref={ref}
+        style={{ transform: `scale(${fit})`, transformOrigin: "top left" }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
