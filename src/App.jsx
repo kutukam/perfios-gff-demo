@@ -28,6 +28,7 @@ import {
 import { Scrim } from "./components/index.jsx";
 import { loaders } from "./data/journey.js";
 import { useDemo } from "./demo/flow.jsx";
+import { AssistantButton } from "./demo/assistant.jsx";
 
 /* ============================================================
    FIT — one phone frame, any screen it is shown on.
@@ -303,6 +304,7 @@ function DemoView() {
       <div className="flow__progress">
         <span style={{ width: `${((i + 1) / total) * 100}%` }} />
       </div>
+      <AssistantButton />
     </div>
   );
 }

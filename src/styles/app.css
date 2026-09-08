@@ -161,3 +161,56 @@
   pointer-events: none;
   z-index: 6;
 }
+
+
+/* ============================================================
+   ASSISTANT — the help control that starts the voice agent.
+   ------------------------------------------------------------
+   It sits on the page, not inside the phone frame: it is the
+   lender's assistance offer, not part of the application being
+   filled in, and putting it inside would scale with the frame
+   and end up a 12px dot on a laptop.
+   ============================================================ */
+.assist {
+  position: fixed; right: 20px; bottom: 88px; z-index: 70;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+}
+.assist__btn {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--primary, #0050aa); color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 80, 170, .38), 0 1px 2px rgba(16, 40, 74, .2);
+  transition: transform .15s ease, background .2s ease;
+}
+.assist__btn:hover { transform: translateY(-1px); }
+.assist__btn.is-busy { background: #6b7f9c; cursor: progress; }
+.assist__btn.is-live { background: #1faa62; }
+/* A quiet ring while connecting, so a slow mic prompt still looks alive. */
+.assist__btn.is-busy::after {
+  content: ""; position: absolute; width: 56px; height: 56px;
+  border-radius: 50%; border: 2px solid rgba(0, 80, 170, .5);
+  animation: assist-pulse 1.4s ease-out infinite;
+}
+@keyframes assist-pulse {
+  0% { transform: scale(1); opacity: .7; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+/* Three bars that move while the assistant is on the call. */
+.assist__bars { display: flex; align-items: flex-end; gap: 3px; height: 20px; }
+.assist__bars i {
+  width: 3px; background: #fff; border-radius: 2px;
+  animation: assist-bar .9s ease-in-out infinite;
+}
+.assist__bars i:nth-child(1) { height: 9px;  animation-delay: 0s; }
+.assist__bars i:nth-child(2) { height: 18px; animation-delay: .15s; }
+.assist__bars i:nth-child(3) { height: 12px; animation-delay: .3s; }
+@keyframes assist-bar { 0%, 100% { transform: scaleY(.5); } 50% { transform: scaleY(1); } }
+.assist__error {
+  max-width: 230px; margin: 0; padding: 8px 10px;
+  background: #fff; border-radius: 8px; font-size: 12px; line-height: 16px;
+  color: #8a2b2b; box-shadow: 0 6px 20px rgba(16, 40, 74, .18);
+}
+@media (max-width: 560px) {
+  .assist { right: 12px; bottom: 76px; }
+  .assist__btn { width: 50px; height: 50px; }
+}
