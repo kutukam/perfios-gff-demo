@@ -20,10 +20,10 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
    out is part of the demo being honest.
    ============================================================ */
 
-/* Ordered best-first; Safari only takes the last one. */
+/* VP8 before VP9 on purpose: this encodes while a voice call is running, and VP9 costs
+   noticeably more CPU on a phone for a clip nobody scrubs through. Safari takes the last. */
 const CLIP_TYPES = [
-  "video/webm;codecs=vp9,opus",
-  "video/webm;codecs=vp8,opus",
+  "video/webm;codecs=vp8",
   "video/webm",
   "video/mp4",
 ];
@@ -121,14 +121,21 @@ export function CameraProvider({ children }) {
       return;
     }
     try {
-      // Front camera, portrait-ish: the design's window is 430x569. Audio matters here
-      // — the customer is asked to read four digits ALOUD, so a liveness clip without
-      // sound proves half of what the step exists to prove. A machine with no
-      // microphone still works: it falls back to video only rather than failing shut.
+      /**
+       * VIDEO ONLY. THE VOICE ASSISTANT ALREADY OWNS THE MICROPHONE.
+       *
+       * Asking for audio here seemed obviously right: the customer is told to read four
+       * digits ALOUD, so a silent liveness clip proves half of what the step is for. But
+       * by the time this screen is reached the assistant is mid-call and already holding
+       * a microphone capture. A second one makes the browser reconfigure the shared audio
+       * input, and on a phone that is not free: the assistant's speech breaks up where the
+       * capture starts, and the output drops to the quieter route. Reported from a real
+       * run as "the voice breaks in the middle and is a bit low", and it was this.
+       *
+       * The clip is worth less without sound. The call is worth more.
+       */
       const video = { facingMode: "user", width: { ideal: 720 }, height: { ideal: 960 } };
-      const got = await navigator.mediaDevices
-        .getUserMedia({ video, audio: true })
-        .catch(() => navigator.mediaDevices.getUserMedia({ video, audio: false }));
+      const got = await navigator.mediaDevices.getUserMedia({ video, audio: false });
       streamRef.current = got;
       setStream(got);
       setError(null);
